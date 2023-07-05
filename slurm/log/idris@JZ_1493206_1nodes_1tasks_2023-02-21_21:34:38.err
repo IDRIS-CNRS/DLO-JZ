@@ -1,0 +1,12 @@
+Loading pytorch-gpu/py3/1.11.0
+  Loading requirement: cuda/11.2 nccl/2.9.6-1-cuda cudnn/8.1.1.33-cuda gcc/8.4.1
+    openmpi/4.1.1-cuda intel-mkl/2020.4 magma/2.5.4-cuda sox/14.4.2
+    sparsehash/2.0.3 libjpeg-turbo/2.1.3
++ srun python -u dlojz.py -b 128 --image-size 176 --test
+/gpfslocalsup/pub/anaconda-py3/2021.05/envs/pytorch-gpu-1.11.0+py3.9.12/lib/python3.9/site-packages/apex/pyprof/__init__.py:5: FutureWarning: pyprof will be removed by the end of June, 2022
+  warnings.warn("pyprof will be removed by the end of June, 2022", FutureWarning)
+
+real	6m27.615s
+user	0m0.020s
+sys	0m0.013s
++ date

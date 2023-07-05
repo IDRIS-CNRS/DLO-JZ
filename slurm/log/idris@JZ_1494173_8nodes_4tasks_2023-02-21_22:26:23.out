@@ -1,0 +1,707 @@
+>>> Training on  8  nodes and  32  processes
+model: Resnet-50
+number of parameters: 25557032
+global batch size: 16384 - mini batch size: 512
+Optimizer: SGD (
+Parameter Group 0
+    dampening: 0
+    lr: 1.0
+    maximize: False
+    momentum: 0.9
+    nesterov: False
+    weight_decay: 0.0005
+)
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+DATALOADER 10 True True True 3 False 
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [1/41], Step [7/79], Time: 18.668, Loss: 6.9583, Acc:0.0012
+Epoch [1/41], Step [14/79], Time: 3.107, Loss: 6.9771, Acc:0.0013
+Epoch [1/41], Step [21/79], Time: 2.821, Loss: 6.8954, Acc:0.0019
+Epoch [1/41], Step [28/79], Time: 2.917, Loss: 6.9316, Acc:0.0014
+Epoch [1/41], Step [35/79], Time: 3.044, Loss: 6.8725, Acc:0.0021
+Epoch [1/41], Step [42/79], Time: 2.908, Loss: 6.8524, Acc:0.0025
+Epoch [1/41], Step [49/79], Time: 3.054, Loss: 6.8336, Acc:0.0031
+Epoch [1/41], Step [56/79], Time: 2.859, Loss: 6.7940, Acc:0.0041
+Epoch [1/41], Step [63/79], Time: 2.508, Loss: 6.8071, Acc:0.0047
+Epoch [1/41], Step [70/79], Time: 2.377, Loss: 6.7448, Acc:0.0059
+Epoch [1/41], Step [77/79], Time: 2.377, Loss: 6.7104, Acc:0.0063
+Epoch [1/41], Step [79/79], Time: 0.940, Loss: 6.6748, Acc:0.0079
+##EVALUATION STEP##
+Epoch [1/41], Validation Loss: 6.7272, Validation Accuracy: 0.0079
+>>> Validation complete in: 0:00:03.947681
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [2/41], Step [7/79], Time: 7.373, Loss: 6.6453, Acc:0.0082
+Epoch [2/41], Step [14/79], Time: 3.271, Loss: 6.6880, Acc:0.0096
+Epoch [2/41], Step [21/79], Time: 3.325, Loss: 6.5842, Acc:0.0111
+Epoch [2/41], Step [28/79], Time: 2.626, Loss: 6.5528, Acc:0.0128
+Epoch [2/41], Step [35/79], Time: 3.236, Loss: 6.4837, Acc:0.0138
+Epoch [2/41], Step [42/79], Time: 3.632, Loss: 6.4746, Acc:0.0163
+Epoch [2/41], Step [49/79], Time: 3.061, Loss: 6.4283, Acc:0.0190
+Epoch [2/41], Step [56/79], Time: 2.866, Loss: 6.3799, Acc:0.0198
+Epoch [2/41], Step [63/79], Time: 3.278, Loss: 6.3067, Acc:0.0222
+Epoch [2/41], Step [70/79], Time: 2.780, Loss: 6.1672, Acc:0.0242
+Epoch [2/41], Step [77/79], Time: 2.611, Loss: 6.1930, Acc:0.0278
+Epoch [2/41], Step [79/79], Time: 0.534, Loss: 6.2640, Acc:0.0302
+##EVALUATION STEP##
+Epoch [2/41], Validation Loss: 6.4145, Validation Accuracy: 0.0207
+>>> Validation complete in: 0:00:03.129230
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [3/41], Step [7/79], Time: 7.323, Loss: 6.1599, Acc:0.0290
+Epoch [3/41], Step [14/79], Time: 3.264, Loss: 6.1189, Acc:0.0336
+Epoch [3/41], Step [21/79], Time: 3.405, Loss: 5.9964, Acc:0.0380
+Epoch [3/41], Step [28/79], Time: 2.694, Loss: 5.9146, Acc:0.0417
+Epoch [3/41], Step [35/79], Time: 3.067, Loss: 5.9407, Acc:0.0450
+Epoch [3/41], Step [42/79], Time: 3.422, Loss: 5.8699, Acc:0.0476
+Epoch [3/41], Step [49/79], Time: 2.954, Loss: 5.9171, Acc:0.0524
+Epoch [3/41], Step [56/79], Time: 3.126, Loss: 5.8069, Acc:0.0541
+Epoch [3/41], Step [63/79], Time: 3.291, Loss: 5.7847, Acc:0.0591
+Epoch [3/41], Step [70/79], Time: 5.211, Loss: 5.6506, Acc:0.0637
+Epoch [3/41], Step [77/79], Time: 2.400, Loss: 5.6315, Acc:0.0697
+Epoch [3/41], Step [79/79], Time: 0.538, Loss: 5.6354, Acc:0.0677
+##EVALUATION STEP##
+Epoch [3/41], Validation Loss: 5.8600, Validation Accuracy: 0.0521
+>>> Validation complete in: 0:00:03.274629
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [4/41], Step [7/79], Time: 7.261, Loss: 5.4262, Acc:0.0742
+Epoch [4/41], Step [14/79], Time: 3.256, Loss: 5.6116, Acc:0.0755
+Epoch [4/41], Step [21/79], Time: 3.331, Loss: 5.6022, Acc:0.0795
+Epoch [4/41], Step [28/79], Time: 2.775, Loss: 5.5537, Acc:0.0834
+Epoch [4/41], Step [35/79], Time: 2.977, Loss: 5.4775, Acc:0.0868
+Epoch [4/41], Step [42/79], Time: 3.518, Loss: 5.4705, Acc:0.0946
+Epoch [4/41], Step [49/79], Time: 2.979, Loss: 5.2578, Acc:0.1013
+Epoch [4/41], Step [56/79], Time: 2.998, Loss: 5.4483, Acc:0.1034
+Epoch [4/41], Step [63/79], Time: 7.388, Loss: 5.1358, Acc:0.1096
+Epoch [4/41], Step [70/79], Time: 2.387, Loss: 5.3358, Acc:0.1105
+Epoch [4/41], Step [77/79], Time: 2.396, Loss: 5.2511, Acc:0.1162
+Epoch [4/41], Step [79/79], Time: 0.539, Loss: 5.3505, Acc:0.1181
+##EVALUATION STEP##
+Epoch [4/41], Validation Loss: 5.7489, Validation Accuracy: 0.0565
+>>> Validation complete in: 0:00:03.120385
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [5/41], Step [7/79], Time: 7.314, Loss: 5.1275, Acc:0.1198
+Epoch [5/41], Step [14/79], Time: 3.301, Loss: 5.3503, Acc:0.1019
+Epoch [5/41], Step [21/79], Time: 3.521, Loss: 5.4273, Acc:0.1064
+Epoch [5/41], Step [28/79], Time: 2.758, Loss: 5.0885, Acc:0.1191
+Epoch [5/41], Step [35/79], Time: 3.116, Loss: 5.0948, Acc:0.1278
+Epoch [5/41], Step [42/79], Time: 3.554, Loss: 5.0818, Acc:0.1398
+Epoch [5/41], Step [49/79], Time: 2.975, Loss: 5.1146, Acc:0.1456
+Epoch [5/41], Step [56/79], Time: 9.950, Loss: 4.9760, Acc:0.1489
+Epoch [5/41], Step [63/79], Time: 2.450, Loss: 4.9240, Acc:0.1524
+Epoch [5/41], Step [70/79], Time: 2.396, Loss: 4.8872, Acc:0.1620
+Epoch [5/41], Step [77/79], Time: 2.403, Loss: 4.9110, Acc:0.1508
+Epoch [5/41], Step [79/79], Time: 0.539, Loss: 4.7701, Acc:0.1496
+##EVALUATION STEP##
+Epoch [5/41], Validation Loss: 5.4843, Validation Accuracy: 0.0857
+>>> Validation complete in: 0:00:03.199183
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [6/41], Step [7/79], Time: 7.254, Loss: 4.7901, Acc:0.1646
+Epoch [6/41], Step [14/79], Time: 3.233, Loss: 4.7583, Acc:0.1746
+Epoch [6/41], Step [21/79], Time: 3.352, Loss: 4.6486, Acc:0.1795
+Epoch [6/41], Step [28/79], Time: 2.725, Loss: 4.8163, Acc:0.1879
+Epoch [6/41], Step [35/79], Time: 3.106, Loss: 4.7115, Acc:0.1929
+Epoch [6/41], Step [42/79], Time: 3.519, Loss: 4.7755, Acc:0.1829
+Epoch [6/41], Step [49/79], Time: 4.596, Loss: 4.8586, Acc:0.1867
+Epoch [6/41], Step [56/79], Time: 3.126, Loss: 4.6505, Acc:0.1843
+Epoch [6/41], Step [63/79], Time: 2.824, Loss: 4.6135, Acc:0.2034
+Epoch [6/41], Step [70/79], Time: 2.627, Loss: 4.5953, Acc:0.2099
+Epoch [6/41], Step [77/79], Time: 2.379, Loss: 4.6128, Acc:0.2087
+Epoch [6/41], Step [79/79], Time: 0.535, Loss: 4.8192, Acc:0.2030
+##EVALUATION STEP##
+Epoch [6/41], Validation Loss: 5.3901, Validation Accuracy: 0.0953
+>>> Validation complete in: 0:00:03.094708
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [7/41], Step [7/79], Time: 7.119, Loss: 4.5871, Acc:0.2074
+Epoch [7/41], Step [14/79], Time: 3.343, Loss: 4.4095, Acc:0.2228
+Epoch [7/41], Step [21/79], Time: 3.425, Loss: 4.3821, Acc:0.2365
+Epoch [7/41], Step [28/79], Time: 2.701, Loss: 4.4229, Acc:0.2418
+Epoch [7/41], Step [35/79], Time: 3.254, Loss: 4.4803, Acc:0.2318
+Epoch [7/41], Step [42/79], Time: 8.499, Loss: 4.2940, Acc:0.2443
+Epoch [7/41], Step [49/79], Time: 2.943, Loss: 4.2209, Acc:0.2518
+Epoch [7/41], Step [56/79], Time: 2.883, Loss: 4.3292, Acc:0.2486
+Epoch [7/41], Step [63/79], Time: 2.609, Loss: 4.3810, Acc:0.2401
+Epoch [7/41], Step [70/79], Time: 2.383, Loss: 4.3133, Acc:0.2469
+Epoch [7/41], Step [77/79], Time: 2.382, Loss: 4.2561, Acc:0.2488
+Epoch [7/41], Step [79/79], Time: 0.535, Loss: 4.3544, Acc:0.2618
+##EVALUATION STEP##
+Epoch [7/41], Validation Loss: 5.2817, Validation Accuracy: 0.1206
+>>> Validation complete in: 0:00:03.247946
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [8/41], Step [7/79], Time: 7.398, Loss: 4.0949, Acc:0.2594
+Epoch [8/41], Step [14/79], Time: 3.147, Loss: 4.1844, Acc:0.2676
+Epoch [8/41], Step [21/79], Time: 3.373, Loss: 4.2069, Acc:0.2713
+Epoch [8/41], Step [28/79], Time: 2.692, Loss: 4.3021, Acc:0.2676
+Epoch [8/41], Step [35/79], Time: 6.502, Loss: 4.2621, Acc:0.2502
+Epoch [8/41], Step [42/79], Time: 2.839, Loss: 4.1480, Acc:0.2753
+Epoch [8/41], Step [49/79], Time: 2.900, Loss: 4.0536, Acc:0.2817
+Epoch [8/41], Step [56/79], Time: 3.009, Loss: 4.2296, Acc:0.2939
+Epoch [8/41], Step [63/79], Time: 2.796, Loss: 4.0973, Acc:0.2963
+Epoch [8/41], Step [70/79], Time: 2.610, Loss: 4.0122, Acc:0.3063
+Epoch [8/41], Step [77/79], Time: 2.407, Loss: 3.9625, Acc:0.3089
+Epoch [8/41], Step [79/79], Time: 0.540, Loss: 4.0300, Acc:0.2999
+##EVALUATION STEP##
+Epoch [8/41], Validation Loss: 5.6790, Validation Accuracy: 0.0689
+>>> Validation complete in: 0:00:03.279123
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [9/41], Step [7/79], Time: 7.137, Loss: 4.4660, Acc:0.2409
+Epoch [9/41], Step [14/79], Time: 3.637, Loss: 4.3297, Acc:0.2387
+Epoch [9/41], Step [21/79], Time: 3.206, Loss: 4.1316, Acc:0.2658
+Epoch [9/41], Step [28/79], Time: 7.797, Loss: 3.9146, Acc:0.3014
+Epoch [9/41], Step [35/79], Time: 2.893, Loss: 3.8591, Acc:0.3180
+Epoch [9/41], Step [42/79], Time: 3.008, Loss: 3.9525, Acc:0.3198
+Epoch [9/41], Step [49/79], Time: 2.878, Loss: 3.7986, Acc:0.3291
+Epoch [9/41], Step [56/79], Time: 2.859, Loss: 4.0602, Acc:0.3291
+Epoch [9/41], Step [63/79], Time: 2.804, Loss: 4.0024, Acc:0.3208
+Epoch [9/41], Step [70/79], Time: 2.433, Loss: 3.8143, Acc:0.3230
+Epoch [9/41], Step [77/79], Time: 2.398, Loss: 3.9052, Acc:0.3216
+Epoch [9/41], Step [79/79], Time: 0.544, Loss: 4.1174, Acc:0.3216
+##EVALUATION STEP##
+Epoch [9/41], Validation Loss: 5.0909, Validation Accuracy: 0.1274
+>>> Validation complete in: 0:00:03.228322
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [10/41], Step [7/79], Time: 7.346, Loss: 3.8965, Acc:0.3203
+Epoch [10/41], Step [14/79], Time: 3.591, Loss: 3.7519, Acc:0.3402
+Epoch [10/41], Step [21/79], Time: 7.919, Loss: 3.8939, Acc:0.3382
+Epoch [10/41], Step [28/79], Time: 2.876, Loss: 3.7649, Acc:0.3273
+Epoch [10/41], Step [35/79], Time: 3.006, Loss: 3.8218, Acc:0.3325
+Epoch [10/41], Step [42/79], Time: 3.117, Loss: 3.9781, Acc:0.3399
+Epoch [10/41], Step [49/79], Time: 2.931, Loss: 3.8072, Acc:0.3450
+Epoch [10/41], Step [56/79], Time: 2.899, Loss: 3.7857, Acc:0.3515
+Epoch [10/41], Step [63/79], Time: 2.764, Loss: 3.8584, Acc:0.3403
+Epoch [10/41], Step [70/79], Time: 2.434, Loss: 4.0776, Acc:0.3262
+Epoch [10/41], Step [77/79], Time: 2.404, Loss: 3.9330, Acc:0.3227
+Epoch [10/41], Step [79/79], Time: 0.540, Loss: 3.9490, Acc:0.3219
+##EVALUATION STEP##
+Epoch [10/41], Validation Loss: 5.4184, Validation Accuracy: 0.1071
+>>> Validation complete in: 0:00:03.152930
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [11/41], Step [7/79], Time: 7.262, Loss: 3.9893, Acc:0.3099
+Epoch [11/41], Step [14/79], Time: 6.147, Loss: 3.9039, Acc:0.3094
+Epoch [11/41], Step [21/79], Time: 2.802, Loss: 3.7174, Acc:0.3251
+Epoch [11/41], Step [28/79], Time: 2.978, Loss: 3.7631, Acc:0.3453
+Epoch [11/41], Step [35/79], Time: 2.935, Loss: 3.7141, Acc:0.3379
+Epoch [11/41], Step [42/79], Time: 2.870, Loss: 3.6940, Acc:0.3605
+Epoch [11/41], Step [49/79], Time: 3.042, Loss: 3.7696, Acc:0.3701
+Epoch [11/41], Step [56/79], Time: 2.949, Loss: 3.6538, Acc:0.3725
+Epoch [11/41], Step [63/79], Time: 2.793, Loss: 3.5114, Acc:0.3876
+Epoch [11/41], Step [70/79], Time: 2.754, Loss: 3.6011, Acc:0.3830
+Epoch [11/41], Step [77/79], Time: 2.380, Loss: 3.5969, Acc:0.3869
+Epoch [11/41], Step [79/79], Time: 0.531, Loss: 3.5080, Acc:0.3733
+##EVALUATION STEP##
+Epoch [11/41], Validation Loss: 4.3751, Validation Accuracy: 0.2224
+>>> Validation complete in: 0:00:03.207912
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [12/41], Step [7/79], Time: 10.585, Loss: 4.0500, Acc:0.3209
+Epoch [12/41], Step [14/79], Time: 2.952, Loss: 3.8964, Acc:0.3261
+Epoch [12/41], Step [21/79], Time: 2.740, Loss: 3.7134, Acc:0.3636
+Epoch [12/41], Step [28/79], Time: 3.032, Loss: 3.6677, Acc:0.3761
+Epoch [12/41], Step [35/79], Time: 2.965, Loss: 3.5741, Acc:0.3753
+Epoch [12/41], Step [42/79], Time: 2.890, Loss: 3.5277, Acc:0.3911
+Epoch [12/41], Step [49/79], Time: 2.960, Loss: 3.6886, Acc:0.3895
+Epoch [12/41], Step [56/79], Time: 2.982, Loss: 3.5147, Acc:0.3787
+Epoch [12/41], Step [63/79], Time: 2.804, Loss: 3.5448, Acc:0.3928
+Epoch [12/41], Step [70/79], Time: 2.713, Loss: 3.6525, Acc:0.3931
+Epoch [12/41], Step [77/79], Time: 2.402, Loss: 3.4138, Acc:0.3923
+Epoch [12/41], Step [79/79], Time: 0.539, Loss: 3.6748, Acc:0.3909
+##EVALUATION STEP##
+Epoch [12/41], Validation Loss: 4.5972, Validation Accuracy: 0.1986
+>>> Validation complete in: 0:00:03.358948
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [13/41], Step [7/79], Time: 7.093, Loss: 3.8327, Acc:0.3446
+Epoch [13/41], Step [14/79], Time: 3.366, Loss: 4.1192, Acc:0.2882
+Epoch [13/41], Step [21/79], Time: 3.339, Loss: 3.9542, Acc:0.3009
+Epoch [13/41], Step [28/79], Time: 2.710, Loss: 3.7762, Acc:0.3469
+Epoch [13/41], Step [35/79], Time: 3.228, Loss: 3.7888, Acc:0.3651
+Epoch [13/41], Step [42/79], Time: 3.358, Loss: 3.5155, Acc:0.3924
+Epoch [13/41], Step [49/79], Time: 2.846, Loss: 3.3680, Acc:0.4031
+Epoch [13/41], Step [56/79], Time: 3.367, Loss: 3.4801, Acc:0.4128
+Epoch [13/41], Step [63/79], Time: 3.158, Loss: 3.3620, Acc:0.4208
+Epoch [13/41], Step [70/79], Time: 2.870, Loss: 3.4973, Acc:0.4049
+Epoch [13/41], Step [77/79], Time: 2.677, Loss: 3.4233, Acc:0.4094
+Epoch [13/41], Step [79/79], Time: 0.536, Loss: 3.5484, Acc:0.4092
+##EVALUATION STEP##
+Epoch [13/41], Validation Loss: 4.9972, Validation Accuracy: 0.1572
+>>> Validation complete in: 0:00:03.213793
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [14/41], Step [7/79], Time: 7.208, Loss: 3.5776, Acc:0.3793
+Epoch [14/41], Step [14/79], Time: 3.709, Loss: 3.4315, Acc:0.3975
+Epoch [14/41], Step [21/79], Time: 3.209, Loss: 3.6186, Acc:0.4143
+Epoch [14/41], Step [28/79], Time: 2.725, Loss: 3.4430, Acc:0.4203
+Epoch [14/41], Step [35/79], Time: 3.537, Loss: 3.4206, Acc:0.4224
+Epoch [14/41], Step [42/79], Time: 3.452, Loss: 3.2918, Acc:0.4178
+Epoch [14/41], Step [49/79], Time: 3.112, Loss: 3.3268, Acc:0.4245
+Epoch [14/41], Step [56/79], Time: 3.136, Loss: 3.4698, Acc:0.4089
+Epoch [14/41], Step [63/79], Time: 3.145, Loss: 3.6844, Acc:0.3904
+Epoch [14/41], Step [70/79], Time: 3.241, Loss: 3.5370, Acc:0.3766
+Epoch [14/41], Step [77/79], Time: 2.394, Loss: 3.4682, Acc:0.3971
+Epoch [14/41], Step [79/79], Time: 0.536, Loss: 3.3666, Acc:0.4033
+##EVALUATION STEP##
+Epoch [14/41], Validation Loss: 4.1405, Validation Accuracy: 0.2717
+>>> Validation complete in: 0:00:03.073035
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [15/41], Step [7/79], Time: 7.107, Loss: 3.4076, Acc:0.3998
+Epoch [15/41], Step [14/79], Time: 3.421, Loss: 3.5775, Acc:0.4096
+Epoch [15/41], Step [21/79], Time: 3.181, Loss: 3.5941, Acc:0.3954
+Epoch [15/41], Step [28/79], Time: 2.643, Loss: 3.2594, Acc:0.4130
+Epoch [15/41], Step [35/79], Time: 3.362, Loss: 3.2796, Acc:0.4277
+Epoch [15/41], Step [42/79], Time: 3.512, Loss: 3.3473, Acc:0.4252
+Epoch [15/41], Step [49/79], Time: 2.921, Loss: 3.3685, Acc:0.4334
+Epoch [15/41], Step [56/79], Time: 3.127, Loss: 3.2937, Acc:0.4264
+Epoch [15/41], Step [63/79], Time: 9.544, Loss: 3.4783, Acc:0.4155
+Epoch [15/41], Step [70/79], Time: 2.371, Loss: 3.2825, Acc:0.4283
+Epoch [15/41], Step [77/79], Time: 2.372, Loss: 3.4257, Acc:0.4348
+Epoch [15/41], Step [79/79], Time: 0.546, Loss: 3.4980, Acc:0.4421
+##EVALUATION STEP##
+Epoch [15/41], Validation Loss: 3.8810, Validation Accuracy: 0.3083
+>>> Validation complete in: 0:00:03.157439
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [16/41], Step [7/79], Time: 7.229, Loss: 3.4737, Acc:0.4252
+Epoch [16/41], Step [14/79], Time: 3.291, Loss: 3.4085, Acc:0.4244
+Epoch [16/41], Step [21/79], Time: 3.436, Loss: 3.2610, Acc:0.4339
+Epoch [16/41], Step [28/79], Time: 2.733, Loss: 3.5397, Acc:0.4201
+Epoch [16/41], Step [35/79], Time: 3.278, Loss: 3.3673, Acc:0.4245
+Epoch [16/41], Step [42/79], Time: 3.347, Loss: 3.2680, Acc:0.4336
+Epoch [16/41], Step [49/79], Time: 3.031, Loss: 3.3686, Acc:0.4261
+Epoch [16/41], Step [56/79], Time: 5.447, Loss: 3.3183, Acc:0.4360
+Epoch [16/41], Step [63/79], Time: 2.771, Loss: 3.4225, Acc:0.4404
+Epoch [16/41], Step [70/79], Time: 2.483, Loss: 3.2123, Acc:0.4453
+Epoch [16/41], Step [77/79], Time: 2.381, Loss: 3.3530, Acc:0.4489
+Epoch [16/41], Step [79/79], Time: 0.530, Loss: 3.4177, Acc:0.4432
+##EVALUATION STEP##
+Epoch [16/41], Validation Loss: 4.2160, Validation Accuracy: 0.2613
+>>> Validation complete in: 0:00:03.058769
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [17/41], Step [7/79], Time: 7.258, Loss: 3.8399, Acc:0.3761
+Epoch [17/41], Step [14/79], Time: 3.211, Loss: 3.4773, Acc:0.3522
+Epoch [17/41], Step [21/79], Time: 3.381, Loss: 3.4206, Acc:0.3841
+Epoch [17/41], Step [28/79], Time: 2.608, Loss: 3.5410, Acc:0.4030
+Epoch [17/41], Step [35/79], Time: 3.278, Loss: 3.4643, Acc:0.4177
+Epoch [17/41], Step [42/79], Time: 3.392, Loss: 3.4901, Acc:0.4361
+Epoch [17/41], Step [49/79], Time: 7.289, Loss: 3.2289, Acc:0.4539
+Epoch [17/41], Step [56/79], Time: 2.933, Loss: 3.3395, Acc:0.4576
+Epoch [17/41], Step [63/79], Time: 2.642, Loss: 3.0502, Acc:0.4563
+Epoch [17/41], Step [70/79], Time: 2.413, Loss: 3.2796, Acc:0.4550
+Epoch [17/41], Step [77/79], Time: 2.370, Loss: 3.1912, Acc:0.4581
+Epoch [17/41], Step [79/79], Time: 0.531, Loss: 3.5930, Acc:0.4442
+##EVALUATION STEP##
+Epoch [17/41], Validation Loss: 4.2248, Validation Accuracy: 0.2601
+>>> Validation complete in: 0:00:03.263731
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [18/41], Step [7/79], Time: 7.358, Loss: 3.5428, Acc:0.3984
+Epoch [18/41], Step [14/79], Time: 3.015, Loss: 3.2462, Acc:0.4190
+Epoch [18/41], Step [21/79], Time: 3.619, Loss: 3.2197, Acc:0.4416
+Epoch [18/41], Step [28/79], Time: 2.780, Loss: 3.3310, Acc:0.4449
+Epoch [18/41], Step [35/79], Time: 3.196, Loss: 3.2277, Acc:0.4428
+Epoch [18/41], Step [42/79], Time: 4.581, Loss: 3.1501, Acc:0.4572
+Epoch [18/41], Step [49/79], Time: 3.103, Loss: 3.2292, Acc:0.4642
+Epoch [18/41], Step [56/79], Time: 2.770, Loss: 3.2834, Acc:0.4686
+Epoch [18/41], Step [63/79], Time: 2.965, Loss: 3.2548, Acc:0.4589
+Epoch [18/41], Step [70/79], Time: 2.731, Loss: 3.2630, Acc:0.4436
+Epoch [18/41], Step [77/79], Time: 2.397, Loss: 3.1844, Acc:0.4606
+Epoch [18/41], Step [79/79], Time: 0.539, Loss: 3.3772, Acc:0.4628
+##EVALUATION STEP##
+Epoch [18/41], Validation Loss: 4.6043, Validation Accuracy: 0.2128
+>>> Validation complete in: 0:00:03.060910
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [19/41], Step [7/79], Time: 7.176, Loss: 3.1709, Acc:0.4323
+Epoch [19/41], Step [14/79], Time: 3.472, Loss: 3.2154, Acc:0.4452
+Epoch [19/41], Step [21/79], Time: 3.363, Loss: 3.2915, Acc:0.4620
+Epoch [19/41], Step [28/79], Time: 2.614, Loss: 3.2381, Acc:0.4722
+Epoch [19/41], Step [35/79], Time: 6.572, Loss: 2.9697, Acc:0.4740
+Epoch [19/41], Step [42/79], Time: 2.978, Loss: 3.1295, Acc:0.4666
+Epoch [19/41], Step [49/79], Time: 2.921, Loss: 3.1087, Acc:0.4689
+Epoch [19/41], Step [56/79], Time: 2.984, Loss: 3.1247, Acc:0.4645
+Epoch [19/41], Step [63/79], Time: 2.777, Loss: 3.2606, Acc:0.4579
+Epoch [19/41], Step [70/79], Time: 2.600, Loss: 3.3269, Acc:0.4664
+Epoch [19/41], Step [77/79], Time: 2.400, Loss: 2.9707, Acc:0.4697
+Epoch [19/41], Step [79/79], Time: 0.540, Loss: 3.2027, Acc:0.4698
+##EVALUATION STEP##
+Epoch [19/41], Validation Loss: 3.8359, Validation Accuracy: 0.3235
+>>> Validation complete in: 0:00:03.206050
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [20/41], Step [7/79], Time: 7.345, Loss: 3.4374, Acc:0.4304
+Epoch [20/41], Step [14/79], Time: 3.033, Loss: 3.3006, Acc:0.4478
+Epoch [20/41], Step [21/79], Time: 3.356, Loss: 3.2858, Acc:0.4469
+Epoch [20/41], Step [28/79], Time: 4.987, Loss: 3.1871, Acc:0.4480
+Epoch [20/41], Step [35/79], Time: 2.913, Loss: 3.1662, Acc:0.4678
+Epoch [20/41], Step [42/79], Time: 2.951, Loss: 3.1001, Acc:0.4743
+Epoch [20/41], Step [49/79], Time: 3.044, Loss: 3.1840, Acc:0.4769
+Epoch [20/41], Step [56/79], Time: 2.926, Loss: 3.2063, Acc:0.4744
+Epoch [20/41], Step [63/79], Time: 2.937, Loss: 3.1999, Acc:0.4803
+Epoch [20/41], Step [70/79], Time: 2.786, Loss: 3.0380, Acc:0.4818
+Epoch [20/41], Step [77/79], Time: 2.399, Loss: 3.1197, Acc:0.4746
+Epoch [20/41], Step [79/79], Time: 0.541, Loss: 3.3088, Acc:0.4767
+##EVALUATION STEP##
+Epoch [20/41], Validation Loss: 3.7788, Validation Accuracy: 0.3376
+>>> Validation complete in: 0:00:03.048571
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [21/41], Step [7/79], Time: 7.272, Loss: 3.2595, Acc:0.4448
+Epoch [21/41], Step [14/79], Time: 3.384, Loss: 3.3394, Acc:0.4530
+Epoch [21/41], Step [21/79], Time: 8.451, Loss: 3.1410, Acc:0.4692
+Epoch [21/41], Step [28/79], Time: 3.044, Loss: 2.9192, Acc:0.4796
+Epoch [21/41], Step [35/79], Time: 2.874, Loss: 3.1778, Acc:0.4880
+Epoch [21/41], Step [42/79], Time: 2.932, Loss: 3.1574, Acc:0.4898
+Epoch [21/41], Step [49/79], Time: 2.900, Loss: 3.0551, Acc:0.4827
+Epoch [21/41], Step [56/79], Time: 2.832, Loss: 2.9377, Acc:0.4856
+Epoch [21/41], Step [63/79], Time: 2.745, Loss: 3.1115, Acc:0.4805
+Epoch [21/41], Step [70/79], Time: 2.418, Loss: 3.1957, Acc:0.4848
+Epoch [21/41], Step [77/79], Time: 2.380, Loss: 3.0409, Acc:0.4846
+Epoch [21/41], Step [79/79], Time: 0.533, Loss: 3.4464, Acc:0.4699
+##EVALUATION STEP##
+Epoch [21/41], Validation Loss: 3.8758, Validation Accuracy: 0.3233
+>>> Validation complete in: 0:00:03.184016
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [22/41], Step [7/79], Time: 7.318, Loss: 3.2300, Acc:0.4585
+Epoch [22/41], Step [14/79], Time: 7.327, Loss: 3.0309, Acc:0.4776
+Epoch [22/41], Step [21/79], Time: 2.899, Loss: 2.9740, Acc:0.4853
+Epoch [22/41], Step [28/79], Time: 2.962, Loss: 3.1377, Acc:0.4840
+Epoch [22/41], Step [35/79], Time: 3.112, Loss: 3.0063, Acc:0.4922
+Epoch [22/41], Step [42/79], Time: 3.012, Loss: 3.0678, Acc:0.4925
+Epoch [22/41], Step [49/79], Time: 2.767, Loss: 2.8789, Acc:0.4850
+Epoch [22/41], Step [56/79], Time: 3.012, Loss: 2.9905, Acc:0.4825
+Epoch [22/41], Step [63/79], Time: 2.724, Loss: 3.2631, Acc:0.4719
+Epoch [22/41], Step [70/79], Time: 2.522, Loss: 3.3676, Acc:0.4540
+Epoch [22/41], Step [77/79], Time: 2.378, Loss: 3.1767, Acc:0.4387
+Epoch [22/41], Step [79/79], Time: 0.533, Loss: 3.2076, Acc:0.4374
+##EVALUATION STEP##
+Epoch [22/41], Validation Loss: 4.8930, Validation Accuracy: 0.1844
+>>> Validation complete in: 0:00:03.054347
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [23/41], Step [7/79], Time: 10.097, Loss: 3.4431, Acc:0.4402
+Epoch [23/41], Step [14/79], Time: 2.837, Loss: 3.1507, Acc:0.4632
+Epoch [23/41], Step [21/79], Time: 2.743, Loss: 3.1254, Acc:0.4830
+Epoch [23/41], Step [28/79], Time: 2.991, Loss: 3.0164, Acc:0.4910
+Epoch [23/41], Step [35/79], Time: 2.825, Loss: 2.9422, Acc:0.4940
+Epoch [23/41], Step [42/79], Time: 3.027, Loss: 2.9185, Acc:0.5063
+Epoch [23/41], Step [49/79], Time: 2.981, Loss: 3.1381, Acc:0.5019
+Epoch [23/41], Step [56/79], Time: 2.878, Loss: 2.8906, Acc:0.5051
+Epoch [23/41], Step [63/79], Time: 2.867, Loss: 2.8844, Acc:0.5029
+Epoch [23/41], Step [70/79], Time: 2.737, Loss: 2.9063, Acc:0.5009
+Epoch [23/41], Step [77/79], Time: 2.376, Loss: 3.0709, Acc:0.5056
+Epoch [23/41], Step [79/79], Time: 0.532, Loss: 2.9851, Acc:0.5017
+##EVALUATION STEP##
+Epoch [23/41], Validation Loss: 3.3175, Validation Accuracy: 0.4292
+>>> Validation complete in: 0:00:03.406290
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [24/41], Step [7/79], Time: 7.289, Loss: 3.0602, Acc:0.4863
+Epoch [24/41], Step [14/79], Time: 3.396, Loss: 3.0946, Acc:0.4907
+Epoch [24/41], Step [21/79], Time: 3.457, Loss: 3.1309, Acc:0.5014
+Epoch [24/41], Step [28/79], Time: 2.802, Loss: 3.0479, Acc:0.4994
+Epoch [24/41], Step [35/79], Time: 3.193, Loss: 3.0265, Acc:0.5048
+Epoch [24/41], Step [42/79], Time: 3.211, Loss: 3.0893, Acc:0.5017
+Epoch [24/41], Step [49/79], Time: 2.967, Loss: 3.0271, Acc:0.4998
+Epoch [24/41], Step [56/79], Time: 3.114, Loss: 3.0387, Acc:0.5025
+Epoch [24/41], Step [63/79], Time: 3.085, Loss: 2.9770, Acc:0.5057
+Epoch [24/41], Step [70/79], Time: 2.908, Loss: 2.9742, Acc:0.5131
+Epoch [24/41], Step [77/79], Time: 2.823, Loss: 3.0685, Acc:0.5057
+Epoch [24/41], Step [79/79], Time: 0.537, Loss: 3.0406, Acc:0.4986
+##EVALUATION STEP##
+Epoch [24/41], Validation Loss: 3.7110, Validation Accuracy: 0.3519
+>>> Validation complete in: 0:00:03.142167
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [25/41], Step [7/79], Time: 7.260, Loss: 2.9655, Acc:0.4926
+Epoch [25/41], Step [14/79], Time: 3.339, Loss: 2.9421, Acc:0.5009
+Epoch [25/41], Step [21/79], Time: 3.351, Loss: 2.9530, Acc:0.5099
+Epoch [25/41], Step [28/79], Time: 2.712, Loss: 2.9167, Acc:0.5116
+Epoch [25/41], Step [35/79], Time: 2.904, Loss: 2.9777, Acc:0.5103
+Epoch [25/41], Step [42/79], Time: 3.618, Loss: 3.0394, Acc:0.5080
+Epoch [25/41], Step [49/79], Time: 2.881, Loss: 2.9956, Acc:0.5156
+Epoch [25/41], Step [56/79], Time: 3.242, Loss: 2.9486, Acc:0.5082
+Epoch [25/41], Step [63/79], Time: 3.572, Loss: 2.9729, Acc:0.5110
+Epoch [25/41], Step [70/79], Time: 3.359, Loss: 3.2694, Acc:0.5047
+Epoch [25/41], Step [77/79], Time: 2.396, Loss: 2.9899, Acc:0.5078
+Epoch [25/41], Step [79/79], Time: 0.552, Loss: 3.2688, Acc:0.4946
+##EVALUATION STEP##
+Epoch [25/41], Validation Loss: 3.5220, Validation Accuracy: 0.3875
+>>> Validation complete in: 0:00:03.229361
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [26/41], Step [7/79], Time: 7.438, Loss: 3.0812, Acc:0.4938
+Epoch [26/41], Step [14/79], Time: 3.274, Loss: 2.9493, Acc:0.5030
+Epoch [26/41], Step [21/79], Time: 3.296, Loss: 3.0730, Acc:0.5090
+Epoch [26/41], Step [28/79], Time: 2.684, Loss: 2.9834, Acc:0.5178
+Epoch [26/41], Step [35/79], Time: 3.214, Loss: 2.8307, Acc:0.5087
+Epoch [26/41], Step [42/79], Time: 3.321, Loss: 2.9589, Acc:0.5129
+Epoch [26/41], Step [49/79], Time: 2.900, Loss: 2.9047, Acc:0.5128
+Epoch [26/41], Step [56/79], Time: 3.092, Loss: 2.9957, Acc:0.5178
+Epoch [26/41], Step [63/79], Time: 7.156, Loss: 3.1144, Acc:0.5182
+Epoch [26/41], Step [70/79], Time: 2.389, Loss: 3.0671, Acc:0.5208
+Epoch [26/41], Step [77/79], Time: 2.391, Loss: 2.8563, Acc:0.5205
+Epoch [26/41], Step [79/79], Time: 0.547, Loss: 3.0620, Acc:0.5036
+##EVALUATION STEP##
+Epoch [26/41], Validation Loss: 3.8684, Validation Accuracy: 0.3262
+>>> Validation complete in: 0:00:03.183135
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [27/41], Step [7/79], Time: 7.274, Loss: 2.9221, Acc:0.5093
+Epoch [27/41], Step [14/79], Time: 3.444, Loss: 2.9432, Acc:0.5136
+Epoch [27/41], Step [21/79], Time: 3.290, Loss: 2.9172, Acc:0.5227
+Epoch [27/41], Step [28/79], Time: 2.671, Loss: 2.8867, Acc:0.5248
+Epoch [27/41], Step [35/79], Time: 3.027, Loss: 2.9322, Acc:0.5290
+Epoch [27/41], Step [42/79], Time: 3.333, Loss: 2.7974, Acc:0.5282
+Epoch [27/41], Step [49/79], Time: 2.920, Loss: 2.8242, Acc:0.5238
+Epoch [27/41], Step [56/79], Time: 9.806, Loss: 2.8885, Acc:0.5236
+Epoch [27/41], Step [63/79], Time: 2.534, Loss: 2.9142, Acc:0.5302
+Epoch [27/41], Step [70/79], Time: 2.379, Loss: 2.7629, Acc:0.5260
+Epoch [27/41], Step [77/79], Time: 2.381, Loss: 2.9609, Acc:0.5219
+Epoch [27/41], Step [79/79], Time: 0.541, Loss: 2.9094, Acc:0.5194
+##EVALUATION STEP##
+Epoch [27/41], Validation Loss: 3.3463, Validation Accuracy: 0.4203
+>>> Validation complete in: 0:00:03.247609
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [28/41], Step [7/79], Time: 7.294, Loss: 3.0294, Acc:0.5095
+Epoch [28/41], Step [14/79], Time: 3.208, Loss: 2.8760, Acc:0.5184
+Epoch [28/41], Step [21/79], Time: 3.369, Loss: 2.8636, Acc:0.5174
+Epoch [28/41], Step [28/79], Time: 2.645, Loss: 2.8807, Acc:0.5207
+Epoch [28/41], Step [35/79], Time: 3.285, Loss: 2.9400, Acc:0.5228
+Epoch [28/41], Step [42/79], Time: 3.357, Loss: 2.9596, Acc:0.5289
+Epoch [28/41], Step [49/79], Time: 8.219, Loss: 2.8397, Acc:0.5305
+Epoch [28/41], Step [56/79], Time: 2.932, Loss: 3.0555, Acc:0.5335
+Epoch [28/41], Step [63/79], Time: 2.613, Loss: 2.7865, Acc:0.5321
+Epoch [28/41], Step [70/79], Time: 2.398, Loss: 2.9331, Acc:0.5375
+Epoch [28/41], Step [77/79], Time: 2.400, Loss: 2.8684, Acc:0.5345
+Epoch [28/41], Step [79/79], Time: 0.537, Loss: 3.4226, Acc:0.5239
+##EVALUATION STEP##
+Epoch [28/41], Validation Loss: 3.2402, Validation Accuracy: 0.4457
+>>> Validation complete in: 0:00:03.190643
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [29/41], Step [7/79], Time: 7.343, Loss: 2.9946, Acc:0.5190
+Epoch [29/41], Step [14/79], Time: 3.427, Loss: 2.9163, Acc:0.5278
+Epoch [29/41], Step [21/79], Time: 3.182, Loss: 2.9018, Acc:0.5339
+Epoch [29/41], Step [28/79], Time: 2.741, Loss: 3.0523, Acc:0.5372
+Epoch [29/41], Step [35/79], Time: 3.418, Loss: 2.6973, Acc:0.5379
+Epoch [29/41], Step [42/79], Time: 7.224, Loss: 2.7847, Acc:0.5403
+Epoch [29/41], Step [49/79], Time: 2.819, Loss: 2.9885, Acc:0.5359
+Epoch [29/41], Step [56/79], Time: 2.897, Loss: 2.9373, Acc:0.5397
+Epoch [29/41], Step [63/79], Time: 2.800, Loss: 2.8524, Acc:0.5426
+Epoch [29/41], Step [70/79], Time: 2.363, Loss: 2.8304, Acc:0.5461
+Epoch [29/41], Step [77/79], Time: 2.380, Loss: 2.9008, Acc:0.5442
+Epoch [29/41], Step [79/79], Time: 0.534, Loss: 2.8250, Acc:0.5392
+##EVALUATION STEP##
+Epoch [29/41], Validation Loss: 3.0058, Validation Accuracy: 0.4906
+>>> Validation complete in: 0:00:03.188106
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [30/41], Step [7/79], Time: 7.331, Loss: 2.8967, Acc:0.5353
+Epoch [30/41], Step [14/79], Time: 3.440, Loss: 2.8422, Acc:0.5422
+Epoch [30/41], Step [21/79], Time: 3.166, Loss: 2.8520, Acc:0.5473
+Epoch [30/41], Step [28/79], Time: 2.681, Loss: 2.7986, Acc:0.5472
+Epoch [30/41], Step [35/79], Time: 5.170, Loss: 2.8110, Acc:0.5452
+Epoch [30/41], Step [42/79], Time: 2.790, Loss: 2.8849, Acc:0.5508
+Epoch [30/41], Step [49/79], Time: 3.086, Loss: 2.8660, Acc:0.5518
+Epoch [30/41], Step [56/79], Time: 2.918, Loss: 2.7144, Acc:0.5491
+Epoch [30/41], Step [63/79], Time: 2.847, Loss: 2.8732, Acc:0.5551
+Epoch [30/41], Step [70/79], Time: 2.808, Loss: 2.8269, Acc:0.5559
+Epoch [30/41], Step [77/79], Time: 2.394, Loss: 2.7070, Acc:0.5563
+Epoch [30/41], Step [79/79], Time: 0.543, Loss: 2.8190, Acc:0.5462
+##EVALUATION STEP##
+Epoch [30/41], Validation Loss: 3.0072, Validation Accuracy: 0.4916
+>>> Validation complete in: 0:00:02.998232
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [31/41], Step [7/79], Time: 7.250, Loss: 2.7493, Acc:0.5487
+Epoch [31/41], Step [14/79], Time: 3.230, Loss: 2.8787, Acc:0.5454
+Epoch [31/41], Step [21/79], Time: 3.384, Loss: 2.8220, Acc:0.5504
+Epoch [31/41], Step [28/79], Time: 7.923, Loss: 2.8439, Acc:0.5501
+Epoch [31/41], Step [35/79], Time: 3.056, Loss: 2.6942, Acc:0.5582
+Epoch [31/41], Step [42/79], Time: 2.985, Loss: 2.6365, Acc:0.5601
+Epoch [31/41], Step [49/79], Time: 3.038, Loss: 2.7844, Acc:0.5603
+Epoch [31/41], Step [56/79], Time: 2.859, Loss: 2.8336, Acc:0.5560
+Epoch [31/41], Step [63/79], Time: 2.681, Loss: 2.8480, Acc:0.5617
+Epoch [31/41], Step [70/79], Time: 2.403, Loss: 2.6378, Acc:0.5615
+Epoch [31/41], Step [77/79], Time: 2.391, Loss: 2.7142, Acc:0.5631
+Epoch [31/41], Step [79/79], Time: 0.547, Loss: 2.7371, Acc:0.5599
+##EVALUATION STEP##
+Epoch [31/41], Validation Loss: 2.8739, Validation Accuracy: 0.5234
+>>> Validation complete in: 0:00:03.199397
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [32/41], Step [7/79], Time: 7.485, Loss: 2.8686, Acc:0.5530
+Epoch [32/41], Step [14/79], Time: 3.152, Loss: 2.8210, Acc:0.5586
+Epoch [32/41], Step [21/79], Time: 9.475, Loss: 2.8140, Acc:0.5619
+Epoch [32/41], Step [28/79], Time: 2.942, Loss: 2.8593, Acc:0.5638
+Epoch [32/41], Step [35/79], Time: 2.850, Loss: 2.7060, Acc:0.5683
+Epoch [32/41], Step [42/79], Time: 2.956, Loss: 2.7190, Acc:0.5700
+Epoch [32/41], Step [49/79], Time: 2.988, Loss: 2.7269, Acc:0.5700
+Epoch [32/41], Step [56/79], Time: 2.820, Loss: 2.6733, Acc:0.5713
+Epoch [32/41], Step [63/79], Time: 2.665, Loss: 2.5362, Acc:0.5703
+Epoch [32/41], Step [70/79], Time: 2.399, Loss: 2.6997, Acc:0.5726
+Epoch [32/41], Step [77/79], Time: 2.401, Loss: 2.6658, Acc:0.5760
+Epoch [32/41], Step [79/79], Time: 0.546, Loss: 2.8382, Acc:0.5693
+##EVALUATION STEP##
+Epoch [32/41], Validation Loss: 2.8385, Validation Accuracy: 0.5306
+>>> Validation complete in: 0:00:03.168517
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [33/41], Step [7/79], Time: 7.229, Loss: 2.7888, Acc:0.5736
+Epoch [33/41], Step [14/79], Time: 14.978, Loss: 2.7064, Acc:0.5750
+Epoch [33/41], Step [21/79], Time: 2.568, Loss: 2.6826, Acc:0.5775
+Epoch [33/41], Step [28/79], Time: 2.868, Loss: 2.7205, Acc:0.5771
+Epoch [33/41], Step [35/79], Time: 2.933, Loss: 2.7183, Acc:0.5793
+Epoch [33/41], Step [42/79], Time: 3.043, Loss: 2.7809, Acc:0.5786
+Epoch [33/41], Step [49/79], Time: 2.986, Loss: 2.6727, Acc:0.5792
+Epoch [33/41], Step [56/79], Time: 2.903, Loss: 2.5620, Acc:0.5836
+Epoch [33/41], Step [63/79], Time: 2.479, Loss: 2.5319, Acc:0.5834
+Epoch [33/41], Step [70/79], Time: 2.378, Loss: 2.5850, Acc:0.5848
+Epoch [33/41], Step [77/79], Time: 2.376, Loss: 2.6449, Acc:0.5860
+Epoch [33/41], Step [79/79], Time: 0.534, Loss: 2.9386, Acc:0.5825
+##EVALUATION STEP##
+Epoch [33/41], Validation Loss: 2.6909, Validation Accuracy: 0.5659
+>>> Validation complete in: 0:00:03.222590
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [34/41], Step [7/79], Time: 16.739, Loss: 2.5907, Acc:0.5850
+Epoch [34/41], Step [14/79], Time: 2.714, Loss: 2.6517, Acc:0.5884
+Epoch [34/41], Step [21/79], Time: 2.893, Loss: 2.6025, Acc:0.5879
+Epoch [34/41], Step [28/79], Time: 3.009, Loss: 2.6993, Acc:0.5942
+Epoch [34/41], Step [35/79], Time: 2.872, Loss: 2.8052, Acc:0.5886
+Epoch [34/41], Step [42/79], Time: 2.876, Loss: 2.4982, Acc:0.5946
+Epoch [34/41], Step [49/79], Time: 2.886, Loss: 2.7167, Acc:0.5934
+Epoch [34/41], Step [56/79], Time: 2.859, Loss: 2.5861, Acc:0.5951
+Epoch [34/41], Step [63/79], Time: 2.664, Loss: 2.5082, Acc:0.5974
+Epoch [34/41], Step [70/79], Time: 2.397, Loss: 2.5875, Acc:0.5976
+Epoch [34/41], Step [77/79], Time: 2.402, Loss: 2.6322, Acc:0.6044
+Epoch [34/41], Step [79/79], Time: 0.541, Loss: 2.8119, Acc:0.5942
+##EVALUATION STEP##
+Epoch [34/41], Validation Loss: 2.7095, Validation Accuracy: 0.5686
+>>> Validation complete in: 0:00:03.263189
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [35/41], Step [7/79], Time: 7.156, Loss: 2.5411, Acc:0.6025
+Epoch [35/41], Step [14/79], Time: 3.430, Loss: 2.5983, Acc:0.6012
+Epoch [35/41], Step [21/79], Time: 3.330, Loss: 2.5740, Acc:0.6052
+Epoch [35/41], Step [28/79], Time: 2.774, Loss: 2.5736, Acc:0.6063
+Epoch [35/41], Step [35/79], Time: 3.177, Loss: 2.4638, Acc:0.6065
+Epoch [35/41], Step [42/79], Time: 3.322, Loss: 2.6763, Acc:0.6065
+Epoch [35/41], Step [49/79], Time: 2.992, Loss: 2.4354, Acc:0.6102
+Epoch [35/41], Step [56/79], Time: 3.382, Loss: 2.5253, Acc:0.6099
+Epoch [35/41], Step [63/79], Time: 3.057, Loss: 2.4285, Acc:0.6108
+Epoch [35/41], Step [70/79], Time: 2.778, Loss: 2.6632, Acc:0.6140
+Epoch [35/41], Step [77/79], Time: 2.404, Loss: 2.5224, Acc:0.6132
+Epoch [35/41], Step [79/79], Time: 0.725, Loss: 2.5502, Acc:0.6095
+##EVALUATION STEP##
+Epoch [35/41], Validation Loss: 2.4166, Validation Accuracy: 0.6326
+>>> Validation complete in: 0:00:03.092312
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [36/41], Step [7/79], Time: 7.260, Loss: 2.5935, Acc:0.6188
+Epoch [36/41], Step [14/79], Time: 3.320, Loss: 2.5970, Acc:0.6142
+Epoch [36/41], Step [21/79], Time: 3.267, Loss: 2.5233, Acc:0.6184
+Epoch [36/41], Step [28/79], Time: 2.586, Loss: 2.5136, Acc:0.6218
+Epoch [36/41], Step [35/79], Time: 3.436, Loss: 2.4913, Acc:0.6230
+Epoch [36/41], Step [42/79], Time: 3.504, Loss: 2.5931, Acc:0.6215
+Epoch [36/41], Step [49/79], Time: 3.009, Loss: 2.5262, Acc:0.6265
+Epoch [36/41], Step [56/79], Time: 3.069, Loss: 2.4916, Acc:0.6237
+Epoch [36/41], Step [63/79], Time: 3.327, Loss: 2.5339, Acc:0.6237
+Epoch [36/41], Step [70/79], Time: 2.736, Loss: 2.4333, Acc:0.6287
+Epoch [36/41], Step [77/79], Time: 2.584, Loss: 2.5196, Acc:0.6285
+Epoch [36/41], Step [79/79], Time: 0.538, Loss: 2.5038, Acc:0.6172
+##EVALUATION STEP##
+Epoch [36/41], Validation Loss: 2.3682, Validation Accuracy: 0.6450
+>>> Validation complete in: 0:00:03.160198
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [37/41], Step [7/79], Time: 7.241, Loss: 2.5141, Acc:0.6299
+Epoch [37/41], Step [14/79], Time: 3.428, Loss: 2.4811, Acc:0.6350
+Epoch [37/41], Step [21/79], Time: 3.298, Loss: 2.4985, Acc:0.6334
+Epoch [37/41], Step [28/79], Time: 2.718, Loss: 2.2902, Acc:0.6372
+Epoch [37/41], Step [35/79], Time: 3.272, Loss: 2.3966, Acc:0.6422
+Epoch [37/41], Step [42/79], Time: 3.154, Loss: 2.3675, Acc:0.6395
+Epoch [37/41], Step [49/79], Time: 2.811, Loss: 2.4138, Acc:0.6414
+Epoch [37/41], Step [56/79], Time: 3.143, Loss: 2.3627, Acc:0.6462
+Epoch [37/41], Step [63/79], Time: 3.233, Loss: 2.3780, Acc:0.6445
+Epoch [37/41], Step [70/79], Time: 6.346, Loss: 2.3429, Acc:0.6415
+Epoch [37/41], Step [77/79], Time: 2.386, Loss: 2.4413, Acc:0.6476
+Epoch [37/41], Step [79/79], Time: 0.534, Loss: 2.4902, Acc:0.6417
+##EVALUATION STEP##
+Epoch [37/41], Validation Loss: 2.2606, Validation Accuracy: 0.6701
+>>> Validation complete in: 0:00:03.172625
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [38/41], Step [7/79], Time: 7.248, Loss: 2.3948, Acc:0.6521
+Epoch [38/41], Step [14/79], Time: 3.479, Loss: 2.4926, Acc:0.6521
+Epoch [38/41], Step [21/79], Time: 3.120, Loss: 2.3264, Acc:0.6557
+Epoch [38/41], Step [28/79], Time: 2.690, Loss: 2.2981, Acc:0.6552
+Epoch [38/41], Step [35/79], Time: 3.275, Loss: 2.3922, Acc:0.6555
+Epoch [38/41], Step [42/79], Time: 3.278, Loss: 2.3200, Acc:0.6584
+Epoch [38/41], Step [49/79], Time: 2.744, Loss: 2.3181, Acc:0.6584
+Epoch [38/41], Step [56/79], Time: 3.537, Loss: 2.2696, Acc:0.6610
+Epoch [38/41], Step [63/79], Time: 11.313, Loss: 2.3450, Acc:0.6611
+Epoch [38/41], Step [70/79], Time: 2.374, Loss: 2.3770, Acc:0.6611
+Epoch [38/41], Step [77/79], Time: 2.376, Loss: 2.3840, Acc:0.6620
+Epoch [38/41], Step [79/79], Time: 0.538, Loss: 2.2689, Acc:0.6536
+##EVALUATION STEP##
+Epoch [38/41], Validation Loss: 2.1492, Validation Accuracy: 0.6968
+>>> Validation complete in: 0:00:03.101195
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [39/41], Step [7/79], Time: 7.265, Loss: 2.2944, Acc:0.6673
+Epoch [39/41], Step [14/79], Time: 3.375, Loss: 2.2831, Acc:0.6668
+Epoch [39/41], Step [21/79], Time: 3.174, Loss: 2.3152, Acc:0.6679
+Epoch [39/41], Step [28/79], Time: 2.702, Loss: 2.4069, Acc:0.6728
+Epoch [39/41], Step [35/79], Time: 3.369, Loss: 2.3715, Acc:0.6697
+Epoch [39/41], Step [42/79], Time: 3.164, Loss: 2.2208, Acc:0.6729
+Epoch [39/41], Step [49/79], Time: 2.867, Loss: 2.2364, Acc:0.6722
+Epoch [39/41], Step [56/79], Time: 6.104, Loss: 2.2680, Acc:0.6733
+Epoch [39/41], Step [63/79], Time: 2.774, Loss: 2.2967, Acc:0.6775
+Epoch [39/41], Step [70/79], Time: 2.541, Loss: 2.2043, Acc:0.6758
+Epoch [39/41], Step [77/79], Time: 2.394, Loss: 2.3091, Acc:0.6791
+Epoch [39/41], Step [79/79], Time: 0.539, Loss: 2.3075, Acc:0.6672
+##EVALUATION STEP##
+Epoch [39/41], Validation Loss: 2.1193, Validation Accuracy: 0.7062
+>>> Validation complete in: 0:00:03.181169
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [40/41], Step [7/79], Time: 7.152, Loss: 2.1658, Acc:0.6821
+Epoch [40/41], Step [14/79], Time: 3.453, Loss: 2.3713, Acc:0.6822
+Epoch [40/41], Step [21/79], Time: 3.208, Loss: 2.2490, Acc:0.6843
+Epoch [40/41], Step [28/79], Time: 2.625, Loss: 2.2312, Acc:0.6835
+Epoch [40/41], Step [35/79], Time: 3.502, Loss: 2.1723, Acc:0.6855
+Epoch [40/41], Step [42/79], Time: 3.241, Loss: 2.2029, Acc:0.6853
+Epoch [40/41], Step [49/79], Time: 10.978, Loss: 2.2618, Acc:0.6863
+Epoch [40/41], Step [56/79], Time: 2.801, Loss: 2.2160, Acc:0.6858
+Epoch [40/41], Step [63/79], Time: 2.455, Loss: 2.2324, Acc:0.6837
+Epoch [40/41], Step [70/79], Time: 2.399, Loss: 2.2007, Acc:0.6876
+Epoch [40/41], Step [77/79], Time: 2.398, Loss: 2.2156, Acc:0.6830
+Epoch [40/41], Step [79/79], Time: 0.549, Loss: 2.2606, Acc:0.6760
+##EVALUATION STEP##
+Epoch [40/41], Validation Loss: 2.0614, Validation Accuracy: 0.7196
+>>> Validation complete in: 0:00:02.985265
+image batch shape : torch.Size([512, 3, 176, 176])
+Epoch [41/41], Step [7/79], Time: 7.264, Loss: 2.1382, Acc:0.6903
+Epoch [41/41], Step [14/79], Time: 3.322, Loss: 2.2375, Acc:0.6916
+Epoch [41/41], Step [21/79], Time: 3.277, Loss: 2.2009, Acc:0.6886
+Epoch [41/41], Step [28/79], Time: 2.775, Loss: 2.2489, Acc:0.6893
+Epoch [41/41], Step [35/79], Time: 3.184, Loss: 2.2720, Acc:0.6924
+Epoch [41/41], Step [42/79], Time: 8.061, Loss: 2.1437, Acc:0.6924
+Epoch [41/41], Step [49/79], Time: 2.968, Loss: 2.1901, Acc:0.6879
+Epoch [41/41], Step [56/79], Time: 2.890, Loss: 2.1788, Acc:0.6901
+Epoch [41/41], Step [63/79], Time: 2.782, Loss: 2.1884, Acc:0.6891
+Epoch [41/41], Step [70/79], Time: 2.378, Loss: 2.1194, Acc:0.6888
+Epoch [41/41], Step [77/79], Time: 2.379, Loss: 2.2592, Acc:0.6885
+Epoch [41/41], Step [79/79], Time: 0.533, Loss: 1.9719, Acc:0.6917
+##EVALUATION STEP##
+Epoch [41/41], Validation Loss: 2.0529, Validation Accuracy: 0.7212
+>>> Validation complete in: 0:00:03.205679
+>>> Training complete in: 0:30:34.607509
+>>> Number of batch per epoch: 79
+Max Memory Allocated 14800295424 Bytes
+Last epoch checkpointed to checkpoints/1494173_16384.pt
+
+Wed Feb 22 01:01:32 CET 2023

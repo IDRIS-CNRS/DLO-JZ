@@ -2,6 +2,8 @@
 
 Depôt pour la formation IA avancée dédiée à Jean Zay :)
 
+![F1]( images/F1.png )
+
 ## Supports pédagogiques :
 http://www.idris.fr/formations/dlo-jz/
 

@@ -85,6 +85,16 @@ def controle_technique(jobid):
                  if "CUDA out of memory" in line or "Out Of Memory" in line:
                     oom=True
                     break
+        if not oom:
+            error_lines = ['######### ERROR REPORT ##########']
+            with open(log_err, "r") as f:
+                to_print = False
+                for line in f:
+                     if "error" in line or 'Error' in line or '/dlojz.py", line' in line or to_print:
+                        if to_print: to_print = False
+                        if '/dlojz.py", line' in line: to_print = True
+                        error_lines.append(line)
+            
     
     fig = go.Figure(go.Indicator(
     domain = {'x': [0, 0.5], 'y': [0, 1]},
@@ -169,7 +179,7 @@ def controle_technique(jobid):
         print(f'loading step time average (CPU to GPU): {load_time:.6f} sec +/- {load_time_std:.6f}')
         print('-----------')
         el_epochs = round(1800 / ((it_time+load_time)*n_batch/(32/int(gpu)) + 20))
-        print(f'ELIGIBLE to run {el_epochs} epochs')
+        print(f'ELIGIBLE to run {el_epochs} epochs - {int(el_epochs * n_batch * int(gpu) // 32)} update steps')
             
     else:
         overheat=Image.open('images/caroverheat.jpg')
@@ -182,20 +192,25 @@ def controle_technique(jobid):
             sizey=1.1,
             xanchor='center',
             yanchor='middle'))
-        if oom: fig.add_annotation(x=0.25, y=1.,
+        if oom:
+            fig.add_annotation(x=0.25, y=1.,
             text="CUDA Out of Memory",
             showarrow=False,
             align='center',
             font=dict(size=32, color='red'),
             xanchor='center')
-        else: fig.add_annotation(x=0.25, y=1.,
-            text="Unknown error",
+            fig.show()
+        else:
+            fig.add_annotation(x=0.25, y=1.,
+            text="Some error",
             showarrow=False,
             align='center',
             font=dict(size=32, color='black'),
             xanchor='center')
+            fig.show()
+            for l in error_lines: print(l)
         
-        fig.show()
+        
     
 
 def GPU_underthehood(jobids, calcul_memo=True):

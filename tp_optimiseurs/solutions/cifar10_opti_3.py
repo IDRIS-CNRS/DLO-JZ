@@ -91,7 +91,7 @@ def train(args):
     criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)     
     
     # Define optimizer
-    optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.mom, weight_decay=args.wd)
+    optimizer = apex.optimizers.FusedLAMB(model.parameters(), args.lr, betas=(args.mom, 0.999), weight_decay=args.wd)
     wrapped_optimizer = optimizer
     
     # Distribute model
@@ -161,8 +161,9 @@ def train(args):
     N_val_batch = len(val_loader)
     N_val = len(val_dataset)
     
-    scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1, total_iters=5)
-    
+    #scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1, total_iters=5)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, steps_per_epoch=N_batch, epochs=args.epochs)
+
     chrono.start()                                  
     
     ## Initialisation accuracy log 

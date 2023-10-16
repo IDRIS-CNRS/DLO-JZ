@@ -44,8 +44,6 @@ def train():                                                                    
                         help='Test 50 iterations')                                                            #
     parser.add_argument('--test-nsteps', default='50', type=int,                                              #
                         help='the number of steps in test mode')                                              #
-    parser.add_argument('--findlr', default=False, action='store_true',                                       #
-                        help='LR finder')                                                                     # 
     parser.add_argument('--num-workers', default=10, type=int,                                                #
                         help='num workers in dataloader')                                                     #
     parser.add_argument('--persistent-workers', default=True, action=argparse.BooleanOptionalAction,          # 
@@ -155,24 +153,13 @@ def train():                                                                    
     N_val_batch = len(val_loader)
     N_val = len(val_dataset)
     
-#**************************************************************************************************************        
-    ## LR Finder #####                                                                                        #
-    if args.findlr:                                                                                           #
-        if args.lr == 0.1: args.lr = 10                                                                       #
-        lrs, losses=[],[]                                                                                     #
-        mult = (args.lr / 1e-8) ** (1/((N_batch*args.epochs)-1))     ### DON'T MODIFY ################        #
-        optimizer.param_groups[0]['lr'] = 1e-8                                                                #
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=mult)                       #
-                                                                                                              #
-    else:                                                                                                     #
-#**************************************************************************************************************
-        #LR scheduler to accelerate the training time
-        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr,
-                                                    steps_per_epoch=N_batch, epochs=args.epochs)
+    #LR scheduler to accelerate the training time
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr,
+                                                steps_per_epoch=N_batch, epochs=args.epochs)
 
     
     
-    chrono.start()     ### DON'T MODIFY ####                                    
+    chrono.start()     ### DON'T MODIFY ####                           
     
     ## Initialisation  
     if idr_torch.rank == 0: accuracies = []
@@ -249,7 +236,7 @@ def train():                                                                    
             accuracy = (predicted == labels).sum() / labels.size(0)
             if idr_torch.rank == 0: accuracies.append(accuracy.item())
                 
- #**************************************************************************************************************
+#***************************************************************************************************************
             if not args.test and idr_torch.rank == 0 and csteps%10 == 0:                                       #                                         
                 wandb.log({"train accuracy": accuracy.item(),                                                  #
                            "train loss":  loss.item(),                                                         #
@@ -257,12 +244,9 @@ def train():                                                                    
                                                                                                                #
             chrono.backward()                                                                                  #
             chrono.training()                                        ### DON'T MODIFY ###########              #
+                                                                                                               #   
                                                                                                                #
-            if args.findlr:                                                                                    #    
-                lrs.append(scheduler.get_lr()[0])                                                              #
-                losses.append(loss.item())                                                                     #     
-                                                                                                               #
-            elif ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1) and idr_torch.rank == 0:                   #
+            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1) and idr_torch.rank == 0:                     #
                 print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(            #
                       epoch + 1, args.epochs, i+1, N_batch,                                                    #
                       chrono.tac_time(), loss.item(), np.mean(accuracies)))                                    #
@@ -277,7 +261,7 @@ def train():                                                                    
             chrono.dataload()                                                                                  #
                                                                                                                #
             #### VALIDATION ############                                                                       #
-            if ((i == N_batch - 1) or (args.test and i==args.test_nsteps-1)) and not args.findlr:              # 
+            if ((i == N_batch - 1) or (args.test and i==args.test_nsteps-1)) :                                 # 
                                                                                                                #
                 chrono.validation()                                                                            #
                 model.eval()                                        ### DON'T MODIFY ############              #  
@@ -306,7 +290,7 @@ def train():                                                                    
 #***************************************************************************************************************
                 model.train()                                                                                  #
                 chrono.validation()                                                                            #
-                                                                                                               #
+                if idr_torch.rank == 0: assert val_accuracy.item() <= 1., 'Something wrong with your allreduce'#
                 if not args.test and idr_torch.rank == 0:                    ### DON'T MODIFY #############    #    
                     print('##EVALUATION STEP##')                                                               #
                     print('Epoch [{}/{}], Validation Loss: {:.4f}, Validation Accuracy: {:.4f}'.format(        #
@@ -325,26 +309,20 @@ def train():                                                                    
                 val_loss -= val_loss
                 val_accuracy -= val_accuracy 
     
-#***************************************************************************************************************
-    if args.findlr:                                                                                            #
-        if idr_torch.rank == 0:                                                                                #
-            print(f'accuracies: {accuracies}')                                                                 #
-            print(f'loss list: {losses}')                                                                      #
-            print(f'learning rates: {lrs}')                  ### DON'T MODIFY ###############                  #
-    else:                                                                                                      #
-        chrono.display(N_val_batch)                                                                            #
-        if idr_torch.rank == 0:                                                                                #
-            print(">>> Number of batch per epoch: {}".format(N_batch))                                         # 
-            print(f'Max Memory Allocated {torch.cuda.max_memory_allocated()} Bytes')                           #
+#***************************************************************************************************************                                                               
+    chrono.display(N_val_batch)                                                                                #
+    if idr_torch.rank == 0:                                      ### DON'T MODIFY ###############              #
+        print(">>> Number of batch per epoch: {}".format(N_batch))                                             # 
+        print(f'Max Memory Allocated {torch.cuda.max_memory_allocated()} Bytes')                               #
 #***************************************************************************************************************
 
         
     # Save last checkpoint
-    if not args.test and not args.findlr and idr_torch.rank == 0:
+    if not args.test and idr_torch.rank == 0:
         checkpoint_path = f"checkpoints/{os.environ['SLURM_JOBID']}_{global_batch_size}.pt"
         torch.save(model.state_dict(), checkpoint_path)
         print("Last epoch checkpointed to " + checkpoint_path)
-         
+        
 
 if __name__ == '__main__':
     
@@ -352,4 +330,3 @@ if __name__ == '__main__':
     if idr_torch.rank == 0:
         print(">>> Training on ", len(idr_torch.hostnames), " nodes and ", idr_torch.size, " processes")
     train()
-

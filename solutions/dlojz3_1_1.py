@@ -26,6 +26,7 @@ from torch.cuda.amp import autocast, GradScaler
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel
 from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity, schedule
+from mixup.mixup import mixup_data
 
 VAL_BATCH_SIZE=256
 
@@ -244,8 +245,10 @@ def train():                                                                    
     #**************************************************************************************************************
 
                 # distribution of images and labels to all GPUs
+                #images, labels = mixup_data(images, labels, num_classes=1000, alpha=2.) ## ligne déplacée
                 images = images.to(gpu, non_blocking=args.non_blocking, memory_format=torch.channels_last)
                 labels = labels.to(gpu, non_blocking=args.non_blocking)
+                images, labels = mixup_data(images, labels, num_classes=1000, alpha=2., device=gpu)
 
 
     #**************************************************************************************************************
@@ -280,6 +283,7 @@ def train():                                                                    
 
                 # Metric mesurement
                 _, predicted = torch.max(outputs.data, 1)
+                labels = torch.argmax(labels, dim=1)     ### line to add for Mixup and Cutmix
                 accuracy = (predicted == labels).sum() / labels.size(0)
                 dist.all_reduce(accuracy, op=dist.ReduceOp.SUM)
                 accuracy /= idr_torch.size

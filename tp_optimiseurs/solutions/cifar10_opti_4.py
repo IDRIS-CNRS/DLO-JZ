@@ -9,7 +9,7 @@ import numpy as np
 import apex                                      
 from apex.parallel.LARC import LARC              
 from lion import Lion
-                                                 
+
 import idr_torch                                 
 from dlojz_chrono import Chronometer             
                                                  
@@ -92,7 +92,7 @@ def train(args):
     
     # Define optimizer
     optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.mom, weight_decay=args.wd)
-    wrapped_optimizer = optimizer
+    wrapped_optimizer = LARC(optimizer)
     
     # Distribute model
     model = DistributedDataParallel(model, device_ids=[idr_torch.local_rank])
@@ -161,8 +161,9 @@ def train(args):
     N_val_batch = len(val_loader)
     N_val = len(val_dataset)
     
-    scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1, total_iters=5)
-    
+    #scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1, total_iters=5)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, steps_per_epoch=N_batch, epochs=args.epochs)
+
     chrono.start()                                  
     
     ## Initialisation accuracy log 

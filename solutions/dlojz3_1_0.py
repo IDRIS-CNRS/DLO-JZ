@@ -119,6 +119,7 @@ def train():                                                                    
     transform = transforms.Compose([ 
             transforms.RandomResizedCrop(args.image_size),  # Random resize - Data Augmentation
             transforms.RandomHorizontalFlip(),              # Horizontal Flip - Data Augmentation
+            transforms.RandAugment(2, 9),                   # Random Augmentation 2:n operations, 9:magnitude 
             transforms.ToTensor(),                          # convert the PIL Image to a tensor
             transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                  std=(0.229, 0.224, 0.225))

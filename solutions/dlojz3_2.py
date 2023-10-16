@@ -26,6 +26,7 @@ from torch.cuda.amp import autocast, GradScaler
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel
 from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity, schedule
+import webdataset as wds
 
 VAL_BATCH_SIZE=256
 
@@ -123,26 +124,29 @@ def train():                                                                    
             transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                  std=(0.229, 0.224, 0.225))
             ])
-        
     
     
-    train_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet',
-                                                  transform=transform)
+    train_dataset = (
+        wds.WebDataset(os.environ['ALL_CCFRSCRATCH']+'/imagenet/webdataset/imagenet_train-{000000..000127}.tar', shardshuffle=True, nodesplitter=wds.split_by_node)
+        .shuffle(1000)
+        .decode("torchrgb")
+        .to_tuple('input.pyd', 'output.pyd')
+        .map_tuple(transform, lambda x: x)
+        .batched(mini_batch_size)
+        )
     
-    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset,
-                                                                num_replicas=idr_torch.size,
-                                                                rank=idr_torch.rank,
-                                                                shuffle=True)
+    dataset_size = 1281167
+    number_of_batches = dataset_size // global_batch_size
+    train_loader = wds.WebLoader(train_dataset,
+                                 batch_size=None,
+                                 num_workers=args.num_workers,
+                                 persistent_workers=args.persistent_workers,
+                                 pin_memory=args.pin_memory,
+                                 prefetch_factor=args.prefetch_factor,
+                                 drop_last=args.drop_last)
     
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                               batch_size=mini_batch_size,
-                                               shuffle=False,
-                                               sampler=train_sampler,
-                                               num_workers=args.num_workers,
-                                               persistent_workers=args.persistent_workers,
-                                               pin_memory=args.pin_memory,
-                                               prefetch_factor=args.prefetch_factor,
-                                               drop_last=args.drop_last)
+    train_loader = train_loader.slice(number_of_batches)
+    train_loader.length = number_of_batches
     
         
     val_transform = transforms.Compose([
@@ -170,7 +174,7 @@ def train():                                                                    
                                              prefetch_factor=args.prefetch_factor,
                                              drop_last=args.drop_last)
     
-    N_batch = len(train_loader)
+    N_batch = train_loader.length
     N_val_batch = len(val_loader)
     N_val = len(val_dataset)
     

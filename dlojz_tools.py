@@ -16,6 +16,12 @@ import pandas as pd
 
 
 def controle_technique(jobid):
+    # jobid can either be a list, a tuple, an int, or a string
+    if isinstance(jobid, (list, tuple)):
+        jobid = jobid[0]
+    if isinstance(jobid, int):
+        jobid = str(jobid)
+
     n_epoch=90
     it_time=None
     load_time=None
@@ -24,7 +30,7 @@ def controle_technique(jobid):
     bs=None
     power=None
     oom=False
-    log_out = search_log(contains=jobid[0])[0]
+    log_out = search_log(contains=jobid)[0]
     with open(log_out, "r") as f:
         for line in f:
             if "Training performance" in line: 
@@ -79,7 +85,7 @@ def controle_technique(jobid):
     throughput_tot = int(bs)/(it_time + load_time) if it_time else None
     
     if throughput==None:
-        log_err = search_log(contains=jobid[0], with_err=True)['stderr'][0]
+        log_err = search_log(contains=jobid, with_err=True)['stderr'][0]
         with open(log_err, "r") as f:
             for line in f:
                  if "CUDA out of memory" in line or "Out Of Memory" in line:
@@ -551,6 +557,3 @@ def turbo_profiler(jobid, dataloader_info=False):
                                          #"forward_backward_time":[float(it_time)],
                                          #"iteration_time":[float(it_time)+float(load_time)],
         return dataloader_trial
-    
-    
-    

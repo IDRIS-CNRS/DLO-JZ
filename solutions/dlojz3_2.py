@@ -232,7 +232,6 @@ def train():                                                                    
     #### TRAINING ############
     with prof:
         for epoch in range(args.epochs):
-            train_sampler.set_epoch(epoch)
 
     #**************************************************************************************************************
             chrono.dataload()                                                                                     #

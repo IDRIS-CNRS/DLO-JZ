@@ -11,9 +11,6 @@ Cette formation est dédiée au passage à l'échelle multi-GPU de l'entraîneme
 
 ## Plan :
 
-:checkered_flag: : Imagenet Race CPU
-
-[voir résultats sur Weight and Biases](https://wandb.ai/dlojz/Imagenet%20Race%20Cup?workspace=user-bcabot)
 
 ### Jour 1
 
@@ -28,26 +25,29 @@ Cette formation est dédiée au passage à l'échelle multi-GPU de l'entraîneme
 ### Jour 2
 
 * Entraînement distribué : notions générales et parallélisme de données
-* :checkered_flag: Lancement d'un premier entraînement complet sur 32 GPU V100 (qui tournera pendant la nuit)
 * Profilage de code
 * Optimisation du prétraitement des données sur CPU (DataLoader)
-* Entraînement large batches (learning rate scheduler, optimiseurs large batches,…)
 
 ### Jour 3
 
-* :checkered_flag: Visualisation des résultats du premier entraînement lancé la veille
-* :checkered_flag: Optimisation et lancement d'un second entraînement sur 32 GPU V100 (qui tournera pendant la nuit)
-* Les techniques d'optimisation de recherche des hyperparamètres
 * Le stockage et le format des données d'entrée (webdataset)
-* L'augmentation de données (Data Augmentation)
+* Les outils de visualisation et suivi d'expériences
+* Entraînement large batches (learning rate scheduler, optimiseurs large batches,…)
+* Les techniques d'optimisation de recherche des hyperparamètres
 
 ### Jour 4
 
-* :checkered_flag: Visualisation des résultats du second entraînement lancé la veille
+* JIT (torch.compile)
 * Les bonnes pratiques
 * Les parallélismes de modèle
 * Les API pour les parallélismes de modèle
+
+TP au choix :
 * Un exemple de gros modèle : le Vision Transformer
+* DDP et TP_DDP à la main
+* L'augmentation de données (Data Augmentation)
+* JIT et compilation
+
 
 
 ## Durée :
@@ -68,7 +68,7 @@ Les parties pratiques se dérouleront sur le supercalculateur Jean Zay de l'IDRI
 https://cours.idris.fr
 
 ### Améliorations :
-- pytorch 2.0
-- DALI
-- torchdata
-- Transformer, Accelerate, TransformerEngine, PEFT
+* [x] pytorch 2.0
+* [ ] DALI
+* [ ] torchdata
+* [ ] Transformer, Accelerate, TransformerEngine, PEFT

@@ -48,7 +48,11 @@ TP au choix :
 * L'augmentation de données (Data Augmentation)
 * JIT et compilation
 
-
+### Quizz
+* [TP1_0](https://www.deepmama.com/quizz/dlojz_quizz1.html)
+* [TP1_1](https://www.deepmama.com/quizz/dlojz_quizz2.html)
+* [TP1_2](https://www.deepmama.com/quizz/dlojz_quizz3.html)
+  
 
 ## Durée :
 4 jours.

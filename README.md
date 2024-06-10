@@ -73,6 +73,7 @@ https://cours.idris.fr
 
 ### Améliorations :
 * [x] pytorch 2.0
+* [ ] FFCV
 * [ ] DALI
 * [ ] torchdata
 * [ ] Transformer, Accelerate, TransformerEngine, PEFT

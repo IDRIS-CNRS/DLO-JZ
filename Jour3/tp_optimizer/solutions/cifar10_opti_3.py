@@ -1,24 +1,29 @@
+# Standard library imports
+import argparse
+import contextlib
 import os
-import contextlib                                
-import argparse                                  
-import torchvision                               
-import torchvision.transforms as transforms      
-import torchvision.models as models                                 
-import torch                                     
-import numpy as np
-import apex                                      
-from apex.parallel.LARC import LARC              
-from lion import Lion
-                                                 
-import idr_torch                                 
-from dlojz_chrono import Chronometer             
-                                                 
-import random                                    
+import random
 
-from torch.cuda.amp import autocast, GradScaler
+# Third-party library imports
+import numpy as np
+import torch
 import torch.distributed as dist
+import torchvision
+import torchvision.models as models
+import torchvision.transforms as transforms
+
+# Specific module imports
+from apex.parallel.LARC import LARC
+from dlojz_chrono import Chronometer
+from lion import Lion
+import apex
+import idr_torch
+
+# Specific torch imports
+from torch.cuda.amp import autocast, GradScaler
 from torch.nn.parallel import DistributedDataParallel
 from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity, schedule
+from torchmetrics.classification import Accuracy
 
 VAL_BATCH_SIZE=512
 
@@ -64,7 +69,6 @@ def train(args):
                             world_size=idr_torch.size, 
                             rank=idr_torch.rank)
     
-    
     #########  MODEL ########
    
     # Define model
@@ -91,6 +95,8 @@ def train(args):
     criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)     
     
     # Define optimizer
+    #optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.mom, weight_decay=args.wd)
+    #optimizer = torch.optim.AdamW(model.parameters(), args.lr, betas=(args.mom, 0.999), weight_decay=args.wd)
     optimizer = apex.optimizers.FusedLAMB(model.parameters(), args.lr, betas=(args.mom, 0.999), weight_decay=args.wd)
     wrapped_optimizer = optimizer
     
@@ -137,7 +143,7 @@ def train(args):
                     ])
     
     # Define val_loader
-    val_dataset = torchvision.datasets.CIFAR10(root=os.environ['ALL_CCFRSCRATCH']+'/CIFAR_10', 
+    val_dataset = torchvision.datasets.CIFAR10(root=os.environ['ALL_CCFRSCRATCH']+'/CIFAR_10',
                                                train=False, 
                                                download=False, 
                                                transform=val_transform)
@@ -145,7 +151,6 @@ def train(args):
                                                                  num_replicas=idr_torch.size,
                                                                  rank=idr_torch.rank,
                                                                  shuffle=False)
-    
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset,    
                                              batch_size=VAL_BATCH_SIZE,
                                              shuffle=False,
@@ -155,7 +160,6 @@ def train(args):
                                              pin_memory=True,
                                              prefetch_factor=2)
     
-    
     # Define Learning Rate Scheduler
     N_batch = len(train_loader)
     N_val_batch = len(val_loader)
@@ -163,7 +167,7 @@ def train(args):
     
     #scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1, total_iters=5)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, steps_per_epoch=N_batch, epochs=args.epochs)
-
+    
     chrono.start()                                  
     
     ## Initialisation accuracy log 
@@ -171,7 +175,11 @@ def train(args):
         accuracies = []
     val_loss = torch.Tensor([0.]).to(gpu)                  # send to GPU
     val_accuracy = torch.Tensor([0.]).to(gpu)              # send to GPU
-    
+
+    # Torchmetrics
+    train_metric_acc = Accuracy(task="multiclass", num_classes=10).to(gpu)
+    valid_metric_acc = Accuracy(task="multiclass", num_classes=10).to(gpu)
+
     # Pytorch profiler setup
     prof =  profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
                     schedule=schedule(wait=1, warmup=1, active=12),
@@ -216,19 +224,18 @@ def train(args):
                 scaler.step(wrapped_optimizer)
                 scaler.update()
 
-                # Metric mesurement
-                _, predicted = torch.max(outputs.data, 1)      
-                accuracy = (predicted == labels).sum() / labels.size(0)
-                dist.all_reduce(accuracy, op=dist.ReduceOp.SUM)
-                accuracy /= idr_torch.size
-                if idr_torch.rank == 0: accuracies.append(accuracy.item())
-
+                # Torchmetrics
+                _, predicted = torch.max(outputs.data, 1)
+                train_metric_acc(labels,predicted)     #update metric
+                train_acc = train_metric_acc.compute() #sync all rank
+                train_metric_acc.reset()               #reset
+                
                 chrono.backward()
                 chrono.training()
 
                 if idr_torch.rank == 0:
                     print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Acc:{:.4f}'.format(
-                          epoch + 1, args.epochs, i+1, N_batch, loss.item(), np.mean(accuracies)))                             
+                          epoch + 1, args.epochs, i+1, N_batch, loss.item(),train_acc))                             
                     accuracies = []                             
 
                 # scheduler update
@@ -244,7 +251,9 @@ def train(args):
                     model.eval()                                
                     chrono.validation()
                     
-                    for iv, (val_images, val_labels) in enumerate(val_loader):   
+                    for iv, (val_images, val_labels) in enumerate(val_loader): 
+                        
+                        if args.test and iv >= 20: break 
                                                                
                         # distribution of images and labels to all GPUs
                         val_images = val_images.to(gpu, non_blocking=True)
@@ -256,27 +265,32 @@ def train(args):
                                 val_outputs = model(val_images)
                                 loss = criterion(val_outputs, val_labels)
 
-                        val_loss += (loss * val_images.size(0) / N_val)      
-                        _, predicted = torch.max(val_outputs.data, 1)
-                        val_accuracy += ((predicted == val_labels).sum() / N_val)
-                        if args.test and iv >= 20: break                     
+                        val_loss += loss       
 
-                    dist.all_reduce(val_loss, op=dist.ReduceOp.SUM)
-                    dist.all_reduce(val_accuracy, op=dist.ReduceOp.SUM)
+                        # Torchmetrics
+                        _, val_predicted = torch.max(val_outputs.data, 1)
+                        valid_metric_acc(val_labels,val_predicted)#update metric
+                        
+                    val_acc = valid_metric_acc.compute() #sync all rank at evaluation end !
+                    valid_metric_acc.reset()             #reset
+                    val_loss /= iv                       #loss mean on iv
 
                     chrono.validation()                                
                                                                        
                     if not args.test and idr_torch.rank == 0:          
                         print('##EVALUATION STEP##')                   
                         print('Epoch [{}/{}], Validation Loss: {:.4f}, Validation Accuracy: {:.4f}'.format(epoch + 1, args.epochs,
-                        val_loss.item(), val_accuracy.item()))
+                        val_loss.item(), val_acc))
                         print('Learning Rate: {:.4f}'.format(scheduler.get_last_lr()[0]))
                         print(">>> Validation complete in: " + str(chrono.val_time))    
 
-                    ## Clear validations metrics
+                    ## Clear val_loss
                     val_loss -= val_loss
-                    val_accuracy -= val_accuracy 
-
+                     
+        # Torchmetrics epoch reset
+        train_metric_acc.reset()
+        valid_metric_acc.reset()
+            
     ## Be sure all process finish at the same time to avoid incoherent logs at the end of process !
     dist.barrier()
                                   

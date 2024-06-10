@@ -1,10 +1,13 @@
+from IPython.display import display, Markdown
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from PIL import Image
 import difflib
 import pandas as pd
 from idr_pytools import search_log
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 from glob import glob
 import torch
 
@@ -17,21 +20,39 @@ class JobCrashError(Exception):
     pass
 
 def controle_technique(jobid):
-    n_epoch=36
+    # jobid can either be a list, a tuple, an int, or a string
+    if isinstance(jobid, (list, tuple)):
+        jobid = jobid[0]
+    if isinstance(jobid, int):
+        jobid = str(jobid)
+
+    n_epoch=90
     it_time=None
     load_time=None
     n_batch=None
-    write_optim=False 
-    with open(search_log(contains=jobid[0])[0], "r") as f:
+    write_optim=False
+    bs=None
+    power=None
+    oom=False
+    log_out = search_log(contains=jobid)[0]
+    with open(log_out, "r") as f:
         for line in f:
             if "Training performance" in line: 
-                it_time = float(line.split(' ')[-2])
+                it_time = float(line.split(' ')[-4])
+                it_time_std = float(line.split(' ')[-1][:-2])
+                it_time_min = float(line.split(' ')[-6])
             if "Loading performance" in line: 
-                load_time = float(line.split(' ')[-2])
+                load_time = float(line.split(' ')[-4])
+                load_time_std = float(line.split(' ')[-1][:-2])
+                load_time_min = float(line.split(' ')[-6])
+            if "Forward performance" in line: 
+                for_time = float(line.split(' ')[-4])
+            if "Backward performance" in line: 
+                back_time = float(line.split(' ')[-4])
             if "batch per epoch" in line: 
                 n_batch = float(line.split(' ')[-1])
-            if "time estimation" in line: 
-                val_time = float(line.split(':')[-1]) + float(line.split(':')[-2])*60
+            if ">>> Validation time:" in line: 
+                val_time = float(line.split(':')[-1])
             if ">>> Training on " in line:
                 gpu = line.split()[-2]
             if "global batch size" in line:
@@ -43,6 +64,17 @@ def controle_technique(jobid):
                 optim = optim + line + '<br>'
                 if ')' in line and '(' not in line:
                     write_optim=False
+            if 'optimizer_name' in line:
+                optim = line.split('  ')[-1]
+            if 'optimizer_params' in line:
+                optim = optim + '<br>' + ('<br>').join(line.split('  ')[-1].split('. ')[-1].split(', '))
+            if 'scheduler_name' in line:
+                optim = optim + '<br>' + line.split('  ')[-1]
+            if 'scheduler_params' in line:
+                optim = optim + '<br>' + ('<br>').join(line.split('  ')[-1].split('. ')[-1].split(', '))
+            if 'Peak Power during training' in line:
+                power = line.split()[-2].split('.')[0]
+            
                 
     layout = go.Layout(
     autosize=False, 
@@ -53,19 +85,40 @@ def controle_technique(jobid):
     steering=Image.open('images/noun-steering-2879261.png')
     tire=Image.open('images/noun-tire-1467520.png')
     
-    throughput = int(bs)/it_time
+    throughput = int(bs)/it_time if it_time else None
+    throughput_tot = int(bs)/(it_time + load_time) if it_time else None
+    
+    if throughput==None:
+        log_err = search_log(contains=jobid, with_err=True)['stderr'][0]
+        with open(log_err, "r") as f:
+            for line in f:
+                 if "CUDA out of memory" in line or "Out Of Memory" in line:
+                    oom=True
+                    break
+
+        
+        
+            
     
     fig = go.Figure(go.Indicator(
     domain = {'x': [0, 0.5], 'y': [0, 1]},
-    value = throughput,
+    value = throughput_tot,
     mode = "gauge+number",
     title = {'text': "Images/second"},
-    gauge = {'axis': {'range': [None, 6000]},
+    gauge = {'axis': {'range': [None, 10000]},
              'steps' : [
                  {'range': [0, 1200], 'color': "lightgray"},
-                 {'range': [1200, 5000], 'color': "gray"}],
-             'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': 4300}}),
+                 {'range': [1200, 2800], 'color': "gray"}],
+            # 'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': 3000}
+            }),
     layout=layout)
+    
+    if throughput: fig.add_annotation(x=0.25, y=0.1,
+            text=f"GPU : {int(throughput//5*5)}",
+            showarrow=False,
+            align='center',
+            font=dict(size=28),
+            xanchor='center')
     
     fig.add_layout_image(
         dict(
@@ -76,11 +129,18 @@ def controle_technique(jobid):
             sizey=.2,
             xanchor='center'))
 
-    fig.add_annotation(x=0.6, y=0.8,
+    if bs: fig.add_annotation(x=0.6, y=0.8,
             text=f"{gpu} GPU",
             showarrow=False,
             align='center',
             font=dict(size=24),
+            xanchor='center')
+    
+    fig.add_annotation(x=0.5, y=1.2,
+            text=log_out.split('/')[-1].split('.')[0],
+            showarrow=False,
+            align='center',
+            font=dict(size=20),
             xanchor='center')
 
     fig.add_layout_image(
@@ -92,7 +152,7 @@ def controle_technique(jobid):
             sizey=.2,
             xanchor='center'))
 
-    fig.add_annotation(x=0.9, y=0.8,
+    if bs: fig.add_annotation(x=0.9, y=0.8,
             text=f"batch size: {bs}",
             showarrow=False,
             align='center',
@@ -107,27 +167,63 @@ def controle_technique(jobid):
             sizex=.2,
             sizey=.2,
             xanchor='center'))
-    fig.add_annotation(x=0.85, y=0.1,
+    if bs: fig.add_annotation(x=0.85, y=0.0,
             text=optim,
             showarrow=False,
             font=dict(size=16),
             xanchor='center',
             align='left')
-
-    fig.show()
-    print(f'throughput: {throughput:.2f} images/second')
-    print(f'epoch time: {(it_time+load_time)*n_batch:.2f} seconds')
-    print(f'training time estimation for 36 epochs (with validations): {((it_time+load_time)*n_batch+val_time)*n_epoch/3600:.2f} hours')
-    print('-----------')
-    print(f'training step time average (fwd/bkwd on GPU): {it_time} sec')
-    print(f'loading step time average (CPU to GPU): {load_time} sec')
-    print('-----------')
-    if throughput > 6000:
-        print('SELECTED in 50 epochs competition')
-    elif throughput > 4300:
-        print('SELECTED in 36 epochs competition')
+    if power: fig.add_annotation(x=0.25, y=0.5,
+            text=f"{int(power) * int(gpu)} W",
+            showarrow=False,
+            align='center',
+            font=dict(size=28),
+            xanchor='center')
+    
+    if throughput:
+        fig.show()
+        print(f'Train throughput: {throughput_tot:.2f} images/second')
+        print(f'GPU throughput: {throughput:.2f} images/second')
+        print(f'epoch time: {(it_time+load_time)*n_batch:.2f} seconds')
+        #print(f'training time estimation for 90 epochs (with validations): {((it_time+load_time)*n_batch+val_time)*n_epoch/3600:.2f} hours')
+        print('-----------')
+        print(f'training step time average (fwd/bkwd on GPU): {it_time:.6f} sec ({for_time/it_time*100:.1f}%/{back_time/it_time*100:.1f}%) +/- {it_time_std:.6f}')
+        print(f'loading step time average (IO + CPU to GPU transfer): {load_time:.6f} sec +/- {load_time_std:.6f}')
+        #print('-----------')
+        #el_epochs = round(1800 / ((it_time+load_time)*n_batch/(32/int(gpu)) + 20))
+        #print(f'ELIGIBLE to run {el_epochs} epochs - {int(el_epochs * n_batch * int(gpu) // 32)} update steps')
+        display(Markdown(f'[Click here to display the log file]({log_out})'))
+            
     else:
-        print('NOT SELECTED in competition')
+        overheat=Image.open('images/caroverheat.jpg')
+        fig.add_layout_image(
+        dict(
+            source=overheat,
+            x=0.25,
+            y=0.5,
+            sizex=1.1,
+            sizey=1.1,
+            xanchor='center',
+            yanchor='middle'))
+        if oom:
+            fig.add_annotation(x=0.25, y=1.,
+            text="CUDA Out of Memory",
+            showarrow=False,
+            align='center',
+            font=dict(size=32, color='red'),
+            xanchor='center')
+            fig.show()
+            display(Markdown(f'[Please check here the error log]({log_err})'))
+        else:
+            fig.add_annotation(x=0.25, y=1.,
+            text="Some error",
+            showarrow=False,
+            align='center',
+            font=dict(size=32, color='black'),
+            xanchor='center')
+            fig.show()
+            display(Markdown(f'[Please check here the error log]({log_err})'))
+            display(Markdown(f'[Or please check here if Job is finished]({log_out})'))
     
 
 def memory_check(jobids):

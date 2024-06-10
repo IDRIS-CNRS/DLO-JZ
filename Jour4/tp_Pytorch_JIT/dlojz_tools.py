@@ -1,3 +1,4 @@
+from IPython.display import display, Markdown
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from PIL import Image
@@ -7,7 +8,8 @@ from idr_pytools import search_log
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-import pandas as pd
+from glob import glob
+import torch
 
 ###############################
 #Author : Bertrand CABOT, Myriam Peyrounette from IDRIS(CNRS)
@@ -16,6 +18,12 @@ import pandas as pd
 
 
 def controle_technique(jobid):
+    # jobid can either be a list, a tuple, an int, or a string
+    if isinstance(jobid, (list, tuple)):
+        jobid = jobid[0]
+    if isinstance(jobid, int):
+        jobid = str(jobid)
+
     n_epoch=90
     it_time=None
     load_time=None
@@ -24,7 +32,7 @@ def controle_technique(jobid):
     bs=None
     power=None
     oom=False
-    log_out = search_log(contains=jobid[0])[0]
+    log_out = search_log(contains=jobid)[0]
     with open(log_out, "r") as f:
         for line in f:
             if "Training performance" in line: 
@@ -41,8 +49,8 @@ def controle_technique(jobid):
                 back_time = float(line.split(' ')[-4])
             if "batch per epoch" in line: 
                 n_batch = float(line.split(' ')[-1])
-            if "time estimation" in line: 
-                val_time = float(line.split(':')[-1]) + float(line.split(':')[-2])*60
+            if ">>> Validation time:" in line: 
+                val_time = float(line.split(':')[-1])
             if ">>> Training on " in line:
                 gpu = line.split()[-2]
             if "global batch size" in line:
@@ -79,24 +87,36 @@ def controle_technique(jobid):
     throughput_tot = int(bs)/(it_time + load_time) if it_time else None
     
     if throughput==None:
-        log_err = search_log(contains=jobid[0], with_err=True)['stderr'][0]
+        log_err = search_log(contains=jobid, with_err=True)['stderr'][0]
         with open(log_err, "r") as f:
             for line in f:
                  if "CUDA out of memory" in line or "Out Of Memory" in line:
                     oom=True
                     break
+
+        
+        
+            
     
     fig = go.Figure(go.Indicator(
     domain = {'x': [0, 0.5], 'y': [0, 1]},
     value = throughput_tot,
     mode = "gauge+number",
     title = {'text': "Images/second"},
-    gauge = {'axis': {'range': [None, 8000]},
+    gauge = {'axis': {'range': [None, 10000]},
              'steps' : [
                  {'range': [0, 1200], 'color': "lightgray"},
-                 {'range': [1200, 2300], 'color': "gray"}],
-             'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': 3000}}),
+                 {'range': [1200, 2800], 'color': "gray"}],
+            # 'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': 3000}
+            }),
     layout=layout)
+    
+    if throughput: fig.add_annotation(x=0.25, y=0.1,
+            text=f"GPU : {throughput/1000:.2f} k",
+            showarrow=False,
+            align='center',
+            font=dict(size=28),
+            xanchor='center')
     
     fig.add_layout_image(
         dict(
@@ -163,13 +183,14 @@ def controle_technique(jobid):
         print(f'Train throughput: {throughput_tot:.2f} images/second')
         print(f'GPU throughput: {throughput:.2f} images/second')
         print(f'epoch time: {(it_time+load_time)*n_batch:.2f} seconds')
-        print(f'training time estimation for 90 epochs (with validations): {((it_time+load_time)*n_batch+val_time)*n_epoch/3600:.2f} hours')
+        #print(f'training time estimation for 90 epochs (with validations): {((it_time+load_time)*n_batch+val_time)*n_epoch/3600:.2f} hours')
         print('-----------')
         print(f'training step time average (fwd/bkwd on GPU): {it_time:.6f} sec ({for_time/it_time*100:.1f}%/{back_time/it_time*100:.1f}%) +/- {it_time_std:.6f}')
-        print(f'loading step time average (CPU to GPU): {load_time:.6f} sec +/- {load_time_std:.6f}')
-        print('-----------')
-        el_epochs = round(1800 / ((it_time+load_time)*n_batch/(32/int(gpu)) + 20))
-        print(f'ELIGIBLE to run {el_epochs} epochs')
+        print(f'loading step time average (IO + CPU to GPU transfer): {load_time:.6f} sec +/- {load_time_std:.6f}')
+        #print('-----------')
+        #el_epochs = round(1800 / ((it_time+load_time)*n_batch/(32/int(gpu)) + 20))
+        #print(f'ELIGIBLE to run {el_epochs} epochs - {int(el_epochs * n_batch * int(gpu) // 32)} update steps')
+        display(Markdown(f'[Click here to display the log file]({log_out})'))
             
     else:
         overheat=Image.open('images/caroverheat.jpg')
@@ -182,20 +203,27 @@ def controle_technique(jobid):
             sizey=1.1,
             xanchor='center',
             yanchor='middle'))
-        if oom: fig.add_annotation(x=0.25, y=1.,
+        if oom:
+            fig.add_annotation(x=0.25, y=1.,
             text="CUDA Out of Memory",
             showarrow=False,
             align='center',
             font=dict(size=32, color='red'),
             xanchor='center')
-        else: fig.add_annotation(x=0.25, y=1.,
-            text="Unknown error",
+            fig.show()
+            display(Markdown(f'[Please check here the error log]({log_err})'))
+        else:
+            fig.add_annotation(x=0.25, y=1.,
+            text="Some error",
             showarrow=False,
             align='center',
             font=dict(size=32, color='black'),
             xanchor='center')
+            fig.show()
+            display(Markdown(f'[Please check here the error log]({log_err})'))
+            display(Markdown(f'[Or please check here if Job is finished]({log_out})'))
         
-        fig.show()
+        
     
 
 def GPU_underthehood(jobids, calcul_memo=True):
@@ -348,9 +376,9 @@ def val_acc(jobid):
     with open(search_log(contains=jobid[0])[0], "r") as f:
         for line in f:
             if "Validation Accuracy" in line: 
-                accs.append(float(line.split(' ')[-1]))
+                accs.append(float(line.split(',')[-2].split(' ')[-1]))
             elif "Step" in line and "Loss:" in line:
-                train_accs.append(float(line.split()[-1].split(':')[-1]))
+                train_accs.append(float(line.split(',')[-2].split(':')[-1]))
             elif "global batch size" in line:
                 bsize = line.split(' ')[3]
             elif "(" in line and opt == None:
@@ -519,6 +547,7 @@ def turbo_profiler(jobid, dataloader_info=False):
     plt.title('>>> Turbo Profiler >>>', fontsize=16)
     plt.xlabel('Iterations', fontsize=14)
     plt.ylabel('Time in seconds', fontsize=14)
+    plt.ylim(top=8)
     axes = plt.gca()
     plt.show()
 
@@ -531,11 +560,148 @@ def turbo_profiler(jobid, dataloader_info=False):
                                          "non_blocking":[str(non_blocking)],
                                          "prefetch_factor":[int(prefetch_factor)],
                                          "drop_last":[str(drop_last)],
-                                         "loading_time":[float(load_time)],
-                                         "training_time":[float(training_time)]})
+                                         "loading_time":[float(load_time)]})
+                                         #"training_time":[float(training_time)]})
                                          #"forward_backward_time":[float(it_time)],
                                          #"iteration_time":[float(it_time)+float(load_time)],
         return dataloader_trial
+
+
+def comm_profiler(jobid):
+    # jobid can either be a list, a tuple, an int, or a string
+    if isinstance(jobid, (list, tuple)):
+        jobid = jobid[0]
+    if isinstance(jobid, int):
+        jobid = str(jobid)
+
+    coll_dict = {}
+    coll_dict['local_rank'] = []
+    coll_dict['coll_operation'] = []
+    coll_dict['opCount'] = []
+    coll_dict['comm'] = []
+    coll_dict['Count'] = []
+    coll_dict['datatype'] = []
+    coll_dict['op'] = []
+    coll_dict['root'] = []
+    coll_dict['stream'] = []
+    coll_dict['sendbuff'] = []
+    coll_dict['recvbuff'] = []
+    coll_dict['train_step'] = []
+    log_out = search_log(contains=jobid)[0]
+    with open(log_out, "r") as f:
+        for line in f:
+            if ">>> Training on" in line:
+                n_rank = int(line.split()[-2])
+                break
+    steps = ['init.']*n_rank
+    
+    comm_rank = {}
+
+    with open(log_out, "r") as f:
+        for line in f:
+            if "NCCL INFO" in line and "opCount" in line and "datatype" in line: 
+                coll_trace = line.split()
+                coll_dict['local_rank'].append(int(coll_trace[1][1:-1]))
+                coll_dict['coll_operation'].append(coll_trace[4][:-1])
+                coll_dict['opCount'].append(int(coll_trace[6], 16))
+                comm = coll_trace[20]
+                coll_dict['comm'].append(comm)
+                coll_dict['Count'].append(np.int64(coll_trace[12]))
+                coll_dict['datatype'].append(np.int32(coll_trace[14]))
+                coll_dict['op'].append(np.int32(coll_trace[16]))
+                coll_dict['root'].append(np.int32(coll_trace[18]))
+                coll_dict['stream'].append(coll_trace[23])
+                coll_dict['sendbuff'].append(coll_trace[8])
+                coll_dict['recvbuff'].append(coll_trace[10])
+                coll_dict['train_step'].append(steps[comm_rank[comm]])
+                
+            elif "Init COMPLETE" in line:
+                trace = line.split()
+                comm_rank[trace[5]] = int(trace[7])
+                
+            elif "Train step" in line:
+                step = int(line.split()[2])
+                rank = int(line.split()[-1])
+                steps[rank] = 'init.' if step==0 else 'valid.' if step==100 else f'step {step}'
+                
+                        
+    df = pd.DataFrame(coll_dict)
+    df = df[df.train_step.isin(['init.', 'valid.']+[f'step {i}'for i in np.arange(10)+1])]
+    df['global_rank'] = [comm_rank[c] for c in df.comm]
+    df = df.set_index('opCount').sort_index()
+    
+    df.loc[df[df.datatype.isin([2,3,7])].index, 'Count'] *= 4
+    df.loc[df[df.datatype.isin([4,5,8])].index, 'Count'] *= 8
+    df.loc[df[df.datatype.isin([6,9])].index, 'Count'] *= 2
+    
+    dico = {}
+    for r in np.sort(df.global_rank.unique()):
+        dico[f'rank: {r}'] = df[df.global_rank==r].Count
+    nccldtype = { 0: 'ncclInt8',
+              1: 'ncclUint8',
+              2: 'ncclInt32',
+              3: 'ncclUint32',
+              4: 'ncclInt64',
+              5: 'ncclUint64',
+              6: 'ncclFloat16',
+              7: 'ncclFloat32',
+              8: 'ncclFloat64',
+              9: 'ncclBfloat16',
+              10: 'ncclNumTypes'
+            }
+    dico['operations'] = df[df.global_rank==0].train_step + ' - ' + df[df.global_rank==0].coll_operation + ' - (' + df[df.global_rank==0].datatype.replace(nccldtype) + ')'
+    dfplot = pd.DataFrame(dico)
+    dfplot = dfplot.set_index('operations')
+    dfplot.iloc[-110:].plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
+    dfplot = dfplot.groupby('operations', sort=False).sum()
+    dfplot.plot.bar(figsize=(18, 3), rot=90, title=f'Aggregate Collective Communication Profiler - global count: {df.Count.sum()} Bytes', ylabel='communications Bytes')
+    
+    plt.show()
     
     
+def BatchNorm_view(jobid, model, labels=None):
+    layers_w = [k for k in model.state_dict().keys() if 'bn' in k and 'weight' in k]
+    layers_b = [k for k in model.state_dict().keys() if 'bn' in k and 'bias' in k]
+    layers_rmean = [k for k in model.state_dict().keys() if 'bn' in k and 'running_mean' in k]
+    layers_rvar = [k for k in model.state_dict().keys() if 'bn' in k and 'running_var' in k]
     
+    data_w = []
+    data_b = []
+    data_rmean = []
+    data_rvar = []
+    
+    for j in jobid:
+        checkpoint = torch.load(glob(f'checkpoints/{j}_*')[0], map_location=torch.device('cpu'))
+        model.load_state_dict(checkpoint, strict=False)
+        data_w.append([(model.state_dict()[l].mean()).item() for l in layers_w])
+        data_b.append([(model.state_dict()[l].mean()).item() for l in layers_b])
+        data_rmean.append([(model.state_dict()[l].mean()).item() for l in layers_rmean])
+        data_rvar.append([(model.state_dict()[l].mean()).item() for l in layers_rvar])
+    
+    
+    bnlayers = [s[:-7] for s in layers_w]
+    fig, ax = plt.subplots(2,2,figsize=(24,12))
+    ax[0,0].set_title('running_mean', fontsize=16)
+    ax[1,0].set_title('running_var', fontsize=16)
+    ax[1,0].set_xticks(np.arange(len(bnlayers)))
+    ax[1,0].set_xticklabels(bnlayers, rotation='vertical', fontsize=12)
+    ax[0,1].set_title('weight', fontsize=16)
+    ax[1,1].set_title('bias', fontsize=16)
+    ax[1,1].set_xticks(np.arange(len(bnlayers)))
+    ax[1,1].set_xticklabels(bnlayers, rotation='vertical', fontsize=12)
+    for i in range(len(jobid)):
+        ax[0,0].plot(data_rmean[i])
+        ax[1,0].plot(data_rvar[i])
+        if labels:
+            ax[1,1].plot(data_b[i], label=labels[i])
+            ax[0,1].plot(data_w[i], label=labels[i])
+        else:
+            ax[1,1].plot(data_b[i])
+            ax[0,1].plot(data_w[i])
+    if labels:
+        ax[1,1].legend(fontsize=14)
+        ax[0,1].legend(fontsize=14)
+    plt.show()
+    
+
+                

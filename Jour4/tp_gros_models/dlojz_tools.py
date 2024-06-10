@@ -1,3 +1,4 @@
+from IPython.display import display, Markdown
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from PIL import Image
@@ -75,6 +76,8 @@ def controle_technique(jobid, deepspeed=False):
             
                 
     if deepspeed: optim = 'Deepspeed Settings!!'
+            
+                
     layout = go.Layout(
     autosize=False, 
     width=980,
@@ -94,15 +97,9 @@ def controle_technique(jobid, deepspeed=False):
                  if "CUDA out of memory" in line or "Out Of Memory" in line:
                     oom=True
                     break
-        if not oom:
-            error_lines = ['######### ERROR REPORT ##########']
-            with open(log_err, "r") as f:
-                to_print = False
-                for line in f:
-                     if "error" in line or 'Error' in line or '/dlojz.py", line' in line or to_print:
-                        if to_print: to_print = False
-                        if '/dlojz.py", line' in line: to_print = True
-                        error_lines.append(line)
+
+        
+        
             
     
     fig = go.Figure(go.Indicator(
@@ -117,6 +114,13 @@ def controle_technique(jobid, deepspeed=False):
             # 'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': 3000}
             }),
     layout=layout)
+    
+    if throughput: fig.add_annotation(x=0.25, y=0.1,
+            text=f"GPU : {throughput/1000:.2f} k",
+            showarrow=False,
+            align='center',
+            font=dict(size=28),
+            xanchor='center')
     
     fig.add_layout_image(
         dict(
@@ -190,6 +194,7 @@ def controle_technique(jobid, deepspeed=False):
         #print('-----------')
         #el_epochs = round(1800 / ((it_time+load_time)*n_batch/(32/int(gpu)) + 20))
         #print(f'ELIGIBLE to run {el_epochs} epochs - {int(el_epochs * n_batch * int(gpu) // 32)} update steps')
+        display(Markdown(f'[Click here to display the log file]({log_out})'))
             
     else:
         overheat=Image.open('images/caroverheat.jpg')
@@ -210,6 +215,7 @@ def controle_technique(jobid, deepspeed=False):
             font=dict(size=32, color='red'),
             xanchor='center')
             fig.show()
+            display(Markdown(f'[Please check here the error log]({log_err})'))
         else:
             fig.add_annotation(x=0.25, y=1.,
             text="Some error",
@@ -218,7 +224,8 @@ def controle_technique(jobid, deepspeed=False):
             font=dict(size=32, color='black'),
             xanchor='center')
             fig.show()
-            for l in error_lines: print(l)
+            display(Markdown(f'[Please check here the error log]({log_err})'))
+            display(Markdown(f'[Or please check here if Job is finished]({log_out})'))
         
         
     

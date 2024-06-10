@@ -98,8 +98,10 @@ def train():
     #########  DATALOADER ############ 
     # Define a transform to pre-process the training images.
 
-    if idr_torch.rank == 0: print(f"DATALOADER {args.num_workers} {args.persistent_workers} {args.pin_memory} {args.non_blocking} {args.prefetch_factor} {args.drop_last} ") ### DON'T MODIFY ###
-    
+    if idr_torch.rank == 0:
+        print(f"DATALOADER {args.num_workers} {args.persistent_workers} {args.pin_memory} \
+{args.non_blocking} {args.prefetch_factor} {args.drop_last} ") ### DON'T MODIFY ###
+        
     transform = transforms.Compose([ 
             transforms.RandomResizedCrop(args.image_size),  # Random resize - Data Augmentation
             transforms.RandomHorizontalFlip(),              # Horizontal Flip - Data Augmentation
@@ -130,8 +132,9 @@ def train():
               transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                    std=(0.229, 0.224, 0.225))])
     
-    val_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet', split='val',
-                        transform=val_transform)
+    val_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet',
+                                                split='val',
+                                                transform=val_transform)
     
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset,    
                                              batch_size=VAL_BATCH_SIZE,

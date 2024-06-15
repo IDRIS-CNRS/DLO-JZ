@@ -350,9 +350,9 @@ def GPU_underthehood(jobids, calcul_memo=True):
     
     for i, bs in enumerate(bsize):
         if mem[i] == 'OOM':
-            print(f'Batch size per GPU: {bs} CUDA out of memory')
+            print(f'Global Batch size: {bs} CUDA out of memory')
         else:
-            print(f'Batch size per GPU: {bs} Max GPU Memory Allocated: {mem[i]/2**30:.2f} GB, Troughput: {int(bs)/it_time[i]:.3f} images/second')
+            print(f'Global Batch size: {bs} Max GPU Memory Allocated: {mem[i]/2**30:.2f} GB, Troughput: {int(bs)/it_time[i]:.3f} images/second')
         
     if calcul_memo: print(f'Memory occupancy by Model part : {np.mean(model_mem):.3f} +/- {np.std(model_mem):.3f} GB')
     

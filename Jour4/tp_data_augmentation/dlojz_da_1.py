@@ -199,7 +199,6 @@ def train():
                 print(f'image batch shape : {images.size()}')
             
             # distribution of images and labels to all GPUs
-            # TODO: Apply customized Data Augmentation on images 
             images = images.to(gpu, non_blocking=args.non_blocking, memory_format=torch.channels_last)
             labels = labels.to(gpu, non_blocking=args.non_blocking)
 

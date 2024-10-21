@@ -1,5 +1,4 @@
 ## Author : Bertrand Cabot / IDRIS
-
 import os                                                                                                     
 import contextlib                                                                                                       
 import argparse                                                                                               
@@ -18,13 +17,24 @@ from dlojz_torch import distributed_accuracy
 import random                                                                                                 
 random.seed(123)                                                                                              
 np.random.seed(123)                                                                                           
-torch.manual_seed(123)                                                                                        
+torch.manual_seed(123)
 
 ## import ... ## Add here the libraries to import
 from torch.cuda.amp import autocast, GradScaler
-#TODO: import libraries related to distribution
 
 VAL_BATCH_SIZE=256
+
+## mememory usage
+def get_proc_status(keys = None):
+  """Get value from keys from /proc/self/status file"""
+  with open('/proc/self/status') as f:
+    data = dict(map(str.strip, line.split(':', 1)) for line in f)
+  return tuple(data[k] for k in keys) if keys else data
+
+def memory_usage():
+  """Memory usage of the current process."""
+  peak, hwm = get_proc_status(('VmPeak', 'VmHWM'))
+  print("VmPeak: ",peak," VmHWM: ", hwm)
 
 def train():                                                                                                  
     parser = argparse.ArgumentParser()                                                                        
@@ -44,7 +54,7 @@ def train():
                         help='Test 50 iterations')                                                            
     parser.add_argument('--test-nsteps', default='50', type=int,                                              
                         help='the number of steps in test mode')                                              
-    parser.add_argument('--num-workers', default=16, type=int,                                                
+    parser.add_argument('--num-workers', default=8, type=int,                                                
                         help='num workers in dataloader')                                                     
     parser.add_argument('--persistent-workers', default=True, action=argparse.BooleanOptionalAction,          
                         help='activate persistent workers in dataloader')                                     
@@ -52,7 +62,7 @@ def train():
                         help='activate pin memory option in dataloader')                                      
     parser.add_argument('--non-blocking', default=True, action=argparse.BooleanOptionalAction,                
                         help='activate asynchronuous GPU transfer')                                           
-    parser.add_argument('--prefetch-factor', default=3, type=int,                                             
+    parser.add_argument('--prefetch-factor', default=2, type=int,                                             
                         help='prefectch factor in dataloader')                                                
     parser.add_argument('--drop-last', default=False, action=argparse.BooleanOptionalAction,                  
                         help='activate drop_last option in dataloader')
@@ -67,23 +77,17 @@ def train():
     ## chronometer initialisation (test and rank)
     chrono = Chronometer()
     
-    # configure distribution method: define rank and initialise communication backend (NCCL)
-    #TODO: initialize the parallel environment
-    
-    
     # define model & device
-    #TODO: bind the proper GPU to the current process
     gpu = torch.device("cuda")
-    model = models.resnet50()
+    model = models.resnet152()
     model = model.to(gpu, memory_format=torch.channels_last)
     
-    archi_model = 'Resnet-50'
+    archi_model = 'Resnet-152'
     
     if idr_torch.rank == 0: print(f'model: {archi_model}')                                                   
     if idr_torch.rank == 0: print('number of parameters: {}'.format(sum([p.numel()
                                               for p in model.parameters()])))                                 
-    
-    #TODO: switch the model in Distributed Data Parallel mode 
+     
 
     # distribute batch size (mini-batch)                                                                      
     num_replica = idr_torch.size                                    
@@ -129,7 +133,6 @@ def train():
     train_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet',
                                                   transform=transform)
     
-    #TODO: define distributed sampler for train_loader and call it in the DataLoader
     
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=mini_batch_size,
@@ -151,7 +154,6 @@ def train():
     val_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet', split='val',
                         transform=val_transform)
     
-    #TODO: define distributed sampler for val_loader and call it in the DataLoader
     
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset,    
                                              batch_size=VAL_BATCH_SIZE,
@@ -176,7 +178,6 @@ def train():
     
     #### TRAINING ############
     for epoch in range(args.epochs):
-        # TODO set epoch for sampler
 
         if args.test: chrono.next_iter()
         if idr_torch.rank == 0: chrono.tac_time(clear=True)
@@ -213,11 +214,12 @@ def train():
 
             if args.test: chrono.update()
  
-            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1) and idr_torch.rank == 0:
+            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1):
                 train_loss, accuracy = train_metric.compute()
-                print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
-                      epoch + 1, args.epochs, i+1, N_batch,
-                      chrono.tac_time(), loss_acc, accuracy, accuracy_top5))
+                if idr_torch.rank == 0:
+                    print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
+                          epoch + 1, args.epochs, i+1, N_batch,
+                          chrono.tac_time(), train_loss, accuracy))
 
             # scheduler update
             scheduler.step()
@@ -268,6 +270,7 @@ def train():
         chrono.display()
         print(">>> Number of batch per epoch: {}".format(N_batch))
         print(f'Max Memory Allocated {torch.cuda.max_memory_allocated()} Bytes')
+        memory_usage()
         
     # Save last checkpoint
     if args.chkpt and idr_torch.rank == 0:
@@ -277,8 +280,6 @@ def train():
 
 if __name__ == '__main__':
     
-    os.environ["NCCL_DEBUG"] = "INFO"
-    os.environ["NCCL_DEBUG_SUBSYS"] = "INIT,COLL"
     # display info
     if idr_torch.rank == 0:
         print(">>> Training on ", len(idr_torch.hostnames), " nodes and ", idr_torch.size, " processes")

@@ -12,9 +12,9 @@ from glob import glob
 import torch
 
 ###############################
-#Author : Bertrand CABOT, Myriam Peyrounette from IDRIS(CNRS)
+# Author : Bertrand CABOT, Myriam Peyrounette from IDRIS(CNRS)
 #
-########################
+# #######################
 
 
 def controle_technique(jobid):
@@ -541,10 +541,15 @@ def turbo_profiler(jobid, dataloader_info=False):
                 non_blocking = line.split(' ')[4]
                 prefetch_factor = line.split(' ')[5]
                 drop_last = line.split(' ')[6]
+            if dataloader_info and "VmHWM" in line:
+                cpu_mem_usage = int(line.split(' ')[-2])/2**20
                 
     print(f"\033[1m>>> Turbo Profiler >>>\033[0m Training complete in {training_time} s")
     pd.DataFrame(perf).plot(kind='bar', figsize=(18, 4))
-    plt.title('>>> Turbo Profiler >>>', fontsize=16)
+    if dataloader_info:
+        plt.title(f'>>> Turbo Profiler >>> CPU Memory Usage: {cpu_mem_usage} GB', fontsize=16)
+    else:
+        plt.title('>>> Turbo Profiler >>>', fontsize=16)
     plt.xlabel('Iterations', fontsize=14)
     plt.ylabel('Time in seconds', fontsize=14)
     plt.ylim(top=8)
@@ -560,14 +565,15 @@ def turbo_profiler(jobid, dataloader_info=False):
                                          "non_blocking":[str(non_blocking)],
                                          "prefetch_factor":[int(prefetch_factor)],
                                          "drop_last":[str(drop_last)],
-                                         "loading_time":[float(load_time)]})
+                                         "loading_time":[float(load_time)],
+                                         "CPU_memory_usage(GB)":[float(cpu_mem_usage)]})
                                          #"training_time":[float(training_time)]})
                                          #"forward_backward_time":[float(it_time)],
                                          #"iteration_time":[float(it_time)+float(load_time)],
         return dataloader_trial
 
 
-def comm_profiler(jobid):
+def comm_profiler(jobid, n_display=None):
     # jobid can either be a list, a tuple, an int, or a string
     if isinstance(jobid, (list, tuple)):
         jobid = jobid[0]
@@ -652,7 +658,11 @@ def comm_profiler(jobid):
     dico['operations'] = df[df.global_rank==0].train_step + ' - ' + df[df.global_rank==0].coll_operation + ' - (' + df[df.global_rank==0].datatype.replace(nccldtype) + ')'
     dfplot = pd.DataFrame(dico)
     dfplot = dfplot.set_index('operations')
-    dfplot.iloc[-110:].plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
+    if n_display:
+        dfplot.iloc[:n_display].plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
+        dfplot.iloc[-n_display:].plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
+    else:
+        dfplot.plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
     dfplot = dfplot.groupby('operations', sort=False).sum()
     dfplot.plot.bar(figsize=(18, 3), rot=90, title=f'Aggregate Collective Communication Profiler - global count: {df.Count.sum()} Bytes', ylabel='communications Bytes')
     

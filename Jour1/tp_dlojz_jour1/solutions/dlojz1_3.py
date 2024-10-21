@@ -44,7 +44,7 @@ def train():
                         help='Test 50 iterations')                                                            
     parser.add_argument('--test-nsteps', default='50', type=int,                                              
                         help='the number of steps in test mode')                                              
-    parser.add_argument('--num-workers', default=16, type=int,                                                
+    parser.add_argument('--num-workers', default=8, type=int,                                                
                         help='num workers in dataloader')                                                     
     parser.add_argument('--persistent-workers', default=True, action=argparse.BooleanOptionalAction,          
                         help='activate persistent workers in dataloader')                                     
@@ -52,7 +52,7 @@ def train():
                         help='activate pin memory option in dataloader')                                      
     parser.add_argument('--non-blocking', default=True, action=argparse.BooleanOptionalAction,                
                         help='activate asynchronuous GPU transfer')                                           
-    parser.add_argument('--prefetch-factor', default=3, type=int,                                             
+    parser.add_argument('--prefetch-factor', default=2, type=int,                                             
                         help='prefectch factor in dataloader')                                                
     parser.add_argument('--drop-last', default=False, action=argparse.BooleanOptionalAction,                  
                         help='activate drop_last option in dataloader')                                       
@@ -67,11 +67,11 @@ def train():
     
     # define model
     gpu = torch.device("cuda")
-    model = models.resnet50()
+    model = models.resnet152()
     # TODO: set memory_format with channel last memory
     model = model.to(gpu, memory_format=torch.channels_last)
     
-    archi_model = 'Resnet-50'
+    archi_model = 'Resnet-152'
     
     if idr_torch.rank == 0: print(f'model: {archi_model}')                                                   
     if idr_torch.rank == 0: print('number of parameters: {}'.format(sum([p.numel()
@@ -200,11 +200,12 @@ def train():
 
             if args.test: chrono.update()
  
-            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1) and idr_torch.rank == 0:
+            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1):
                 train_loss, accuracy = train_metric.compute()
-                print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
-                      epoch + 1, args.epochs, i+1, N_batch,
-                      chrono.tac_time(), loss_acc, accuracy, accuracy_top5))
+                if idr_torch.rank == 0:
+                    print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
+                          epoch + 1, args.epochs, i+1, N_batch,
+                          chrono.tac_time(), train_loss, accuracy))
 
             # scheduler update
             scheduler.step()

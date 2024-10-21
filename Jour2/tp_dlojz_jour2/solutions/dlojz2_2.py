@@ -22,10 +22,9 @@ torch.manual_seed(123)
 
 ## import ... ## Add here the libraries to import
 from torch.cuda.amp import autocast, GradScaler
+#TODO: import libraries related to distribution
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel
-#TODO: import libraries related to pytorch profiling
-from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity, schedule
 
 VAL_BATCH_SIZE=256
 
@@ -47,7 +46,7 @@ def train():
                         help='Test 50 iterations')                                                            
     parser.add_argument('--test-nsteps', default='50', type=int,                                              
                         help='the number of steps in test mode')                                              
-    parser.add_argument('--num-workers', default=16, type=int,                                                
+    parser.add_argument('--num-workers', default=8, type=int,                                                
                         help='num workers in dataloader')                                                     
     parser.add_argument('--persistent-workers', default=True, action=argparse.BooleanOptionalAction,          
                         help='activate persistent workers in dataloader')                                     
@@ -55,10 +54,12 @@ def train():
                         help='activate pin memory option in dataloader')                                      
     parser.add_argument('--non-blocking', default=True, action=argparse.BooleanOptionalAction,                
                         help='activate asynchronuous GPU transfer')                                           
-    parser.add_argument('--prefetch-factor', default=3, type=int,                                             
+    parser.add_argument('--prefetch-factor', default=2, type=int,                                             
                         help='prefectch factor in dataloader')                                                
     parser.add_argument('--drop-last', default=False, action=argparse.BooleanOptionalAction,                  
-                        help='activate drop_last option in dataloader')                                       
+                        help='activate drop_last option in dataloader')
+    parser.add_argument('--chkpt', default=False, action='store_true',
+                        help='Save last checkpoint')
 
 
     ## Add parser arguments
@@ -69,22 +70,25 @@ def train():
     chrono = Chronometer()
     
     # configure distribution method: define rank and initialise communication backend (NCCL)
+    #TODO: initialize the parallel environment
     dist.init_process_group(backend='nccl', init_method='env://',
                             world_size=idr_torch.size, rank=idr_torch.rank)
     
     # define model & device
+    #TODO: bind the proper GPU to the current process
     torch.cuda.set_device(idr_torch.local_rank)
     gpu = torch.device("cuda")
-    model = models.resnet50()
+    model = models.resnet152()
     model = model.to(gpu, memory_format=torch.channels_last)
     
-    archi_model = 'Resnet-50'
+    archi_model = 'Resnet-152'
     
     if idr_torch.rank == 0: print(f'model: {archi_model}')                                                   
     if idr_torch.rank == 0: print('number of parameters: {}'.format(sum([p.numel()
                                               for p in model.parameters()])))                                 
     
-    # Switch the model in Distributed Data Parallelism mode 
+    #TODO: switch the model in Distributed Data Parallel mode 
+    #model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model) #Transform BatchNorm Layers to SyncBatchNorm Layers
     model = DistributedDataParallel(model, device_ids=[idr_torch.local_rank])
 
     # distribute batch size (mini-batch)                                                                      
@@ -116,7 +120,7 @@ def train():
     
     ## compatibility for pytorh >= 2.x
     if args.num_workers == 0: args.prefetch_factor = None
-    
+
     # Define a transform to pre-process the training images.
     transform = transforms.Compose([ 
             transforms.RandomResizedCrop(args.image_size),  # Random resize - Data Augmentation
@@ -126,15 +130,17 @@ def train():
                                  std=(0.229, 0.224, 0.225))
             ])
         
-    
-    
+
     train_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet',
                                                   transform=transform)
     
+    #TODO: define distributed sampler for train_loader and call it in the DataLoader
+    
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset,
-                                                                num_replicas=idr_torch.size,
-                                                                rank=idr_torch.rank,
-                                                                shuffle=True)
+                                                                    num_replicas=idr_torch.size,
+                                                                    rank=idr_torch.rank,
+                                                                    shuffle=True)
+    
     
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=mini_batch_size,
@@ -157,10 +163,13 @@ def train():
     val_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet', split='val',
                         transform=val_transform)
     
+    #TODO: define distributed sampler for val_loader and call it in the DataLoader
+    
     val_sampler = torch.utils.data.distributed.DistributedSampler(val_dataset,
                                                               num_replicas=idr_torch.size,
                                                               rank=idr_torch.rank,
                                                               shuffle=False)
+    
     
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset,    
                                              batch_size=VAL_BATCH_SIZE,
@@ -183,111 +192,96 @@ def train():
     
     
     chrono.start()                               
-        
-    # TODO: pytorch profiler setup
-    prof =  profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-                    schedule=schedule(wait=1, warmup=1, active=12, repeat=1),
-                    on_trace_ready=tensorboard_trace_handler('./profiler/' + os.environ['SLURM_JOB_NAME'] 
-                                               + '_' + os.environ['SLURM_JOBID'] + '_bs' +
-                                               str(mini_batch_size)  + '_is' + str(args.image_size)),
-                    profile_memory=True,
-                    record_shapes=False, 
-                    with_stack=False,
-                    with_flops=False
-                    )
-
     
     #### TRAINING ############
-    
-    # TODO: put the loop in the prof context
-    with prof:
-        for epoch in range(args.epochs):
-            train_sampler.set_epoch(epoch)
+    for epoch in range(args.epochs):
+        # TODO set epoch for sampler
+        train_sampler.set_epoch(epoch)
 
-            if args.test: chrono.next_iter()
-            if idr_torch.rank == 0: chrono.tac_time(clear=True)
-            for i, (images, labels) in enumerate(train_loader):    
+        if args.test: chrono.next_iter()
+        if idr_torch.rank == 0: chrono.tac_time(clear=True)
+        for i, (images, labels) in enumerate(train_loader):    
 
-                csteps = i + 1 + epoch * N_batch
-                if args.test and csteps > args.test_nsteps: break
-                if i == 0 and idr_torch.rank == 0:
-                    print(f'image batch shape : {images.size()}')
+            csteps = i + 1 + epoch * N_batch
+            if args.test and csteps > args.test_nsteps: break
+            if args.test: print(f'Train step {csteps} - rank {idr_torch.rank}')
+            if i == 0 and idr_torch.rank == 0:
+                print(f'image batch shape : {images.size()}')
+            
+            # distribution of images and labels to all GPUs
+            images = images.to(gpu, non_blocking=args.non_blocking, memory_format=torch.channels_last)
+            labels = labels.to(gpu, non_blocking=args.non_blocking)
 
-                # distribution of images and labels to all GPUs
-                images = images.to(gpu, non_blocking=args.non_blocking, memory_format=torch.channels_last)
-                labels = labels.to(gpu, non_blocking=args.non_blocking)
+            
+            if args.test: chrono.forward()
 
+            optimizer.zero_grad()
+            # Implement autocasting
+            with autocast():
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+            
+            if args.test: chrono.backward()       
 
-                if args.test: chrono.forward()
+            # Implement gradient scaling
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
-                optimizer.zero_grad()
-                # Implement autocasting
-                with autocast():
-                    outputs = model(images)
-                    loss = criterion(outputs, labels)
+            # Metric mesurement
+            train_metric.update(loss, outputs, labels)
 
-                if args.test: chrono.backward()       
-
-                # Implement gradient scaling
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
-
-                # Metric mesurement
-                train_metric.update(loss, outputs, labels)
-
-                if args.test: chrono.update()
-
-                if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1) and idr_torch.rank == 0:
-                    train_loss, accuracy = train_metric.compute()
+            if args.test: chrono.update()
+ 
+            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1):
+                train_loss, accuracy = train_metric.compute()
+                if idr_torch.rank == 0:
                     print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
                           epoch + 1, args.epochs, i+1, N_batch,
-                          chrono.tac_time(), loss_acc, accuracy, accuracy_top5))
+                          chrono.tac_time(), train_loss, accuracy))
 
-                # scheduler update
-                scheduler.step()
+            # scheduler update
+            scheduler.step()
 
-                # TODO: profiler update
-                prof.step()
+            #### VALIDATION ############   
+            if ((i == N_batch - 1) or (args.test and i==args.test_nsteps-1)) :
+ 
+                chrono.validation()
+                model.eval()
+                if args.test: print(f'Train step 100 - rank {idr_torch.rank}')
 
-                #### VALIDATION ############   
-                if ((i == N_batch - 1) or (args.test and i==args.test_nsteps-1)) :
+                for iv, (val_images, val_labels) in enumerate(val_loader): 
 
-                    chrono.validation()
-                    model.eval()
+                    
+                    # distribution of images and labels to all GPUs
+                    val_images = val_images.to(gpu, non_blocking=args.non_blocking, memory_format=torch.channels_last)
+                    val_labels = val_labels.to(gpu, non_blocking=args.non_blocking)
 
-                    for iv, (val_images, val_labels) in enumerate(val_loader): 
+                    # Runs the forward pass with no grad mode.
+                    with torch.no_grad():
+                        # Implement autocasting
+                        with autocast():
+                            val_outputs = model(val_images)
+                            val_loss = criterion(val_outputs, val_labels)
 
-
-                        # distribution of images and labels to all GPUs
-                        val_images = val_images.to(gpu, non_blocking=args.non_blocking, memory_format=torch.channels_last)
-                        val_labels = val_labels.to(gpu, non_blocking=args.non_blocking)
-
-                        # Runs the forward pass with no grad mode.
-                        with torch.no_grad():
-                            # Implement autocasting
-                            with autocast():
-                                val_outputs = model(val_images)
-                                val_loss = criterion(val_outputs, val_labels)
-
-                        val_metric.update(val_loss, val_outputs, val_labels)
-
-                        if args.test and iv >= 20: break
-
-                    val_loss, val_accuracy = val_metric.compute() 
+                    val_metric.update(val_loss, val_outputs, val_labels)
+                                 
+                    if args.test and iv >= 20: break
+                                                   
+                val_loss, val_accuracy = val_metric.compute() 
 
 
-                    model.train()  
-                    chrono.validation()   
-                    if not args.test and idr_torch.rank == 0:
-                        print('##EVALUATION STEP##')
-                        print('Epoch [{}/{}], Validation Loss: {:.4f}, Validation Accuracy: {:.4f}'.format(
-                                             epoch + 1, args.epochs, val_loss, val_accuracy))
-                        print(">>> Validation complete in: " + str(chrono.val_time))
+                model.train()  
+                chrono.validation()   
+                if not args.test and idr_torch.rank == 0:
+                    print('##EVALUATION STEP##')
+                    print('Epoch [{}/{}], Validation Loss: {:.4f}, Validation Accuracy: {:.4f}'.format(
+                                         epoch + 1, args.epochs, val_loss, val_accuracy))
+                    print(">>> Validation complete in: " + str(chrono.val_time))
 
-                #### END OF VALIDATION ############
-
-                if args.test: chrono.next_iter()
+            #### END OF VALIDATION ############
+            
+            if args.test: chrono.next_iter()
     
                                                              
     chrono.stop()
@@ -295,18 +289,17 @@ def train():
         chrono.display()
         print(">>> Number of batch per epoch: {}".format(N_batch))
         print(f'Max Memory Allocated {torch.cuda.max_memory_allocated()} Bytes')
-
-
         
     # Save last checkpoint
-    if not args.test and idr_torch.rank == 0:
+    if args.chkpt and idr_torch.rank == 0:
         checkpoint_path = f"checkpoints/{os.environ['SLURM_JOBID']}_{global_batch_size}.pt"
-        torch.save(model.state_dict(), checkpoint_path)
-        print("Last epoch checkpointed to " + checkpoint_path)
-        
+        torch.save(model.module.state_dict(), checkpoint_path)
+        print("checkpoint saves: " + checkpoint_path)
 
 if __name__ == '__main__':
     
+    os.environ["NCCL_DEBUG"] = "INFO"
+    os.environ["NCCL_DEBUG_SUBSYS"] = "INIT,COLL"
     # display info
     if idr_torch.rank == 0:
         print(">>> Training on ", len(idr_torch.hostnames), " nodes and ", idr_torch.size, " processes")

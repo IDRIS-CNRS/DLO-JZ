@@ -22,9 +22,7 @@ torch.manual_seed(123)
 
 ## import ... ## Add here the libraries to import
 from torch.cuda.amp import autocast, GradScaler
-import torch.distributed as dist
-from torch.nn.parallel import DistributedDataParallel
-#TODO: import libraries related to pytorch profiling
+#TODO: import libraries related to distribution
 
 
 VAL_BATCH_SIZE=256
@@ -47,7 +45,7 @@ def train():
                         help='Test 50 iterations')                                                            
     parser.add_argument('--test-nsteps', default='50', type=int,                                              
                         help='the number of steps in test mode')                                              
-    parser.add_argument('--num-workers', default=16, type=int,                                                
+    parser.add_argument('--num-workers', default=8, type=int,                                                
                         help='num workers in dataloader')                                                     
     parser.add_argument('--persistent-workers', default=True, action=argparse.BooleanOptionalAction,          
                         help='activate persistent workers in dataloader')                                     
@@ -55,10 +53,12 @@ def train():
                         help='activate pin memory option in dataloader')                                      
     parser.add_argument('--non-blocking', default=True, action=argparse.BooleanOptionalAction,                
                         help='activate asynchronuous GPU transfer')                                           
-    parser.add_argument('--prefetch-factor', default=3, type=int,                                             
+    parser.add_argument('--prefetch-factor', default=2, type=int,                                             
                         help='prefectch factor in dataloader')                                                
     parser.add_argument('--drop-last', default=False, action=argparse.BooleanOptionalAction,                  
-                        help='activate drop_last option in dataloader')                                       
+                        help='activate drop_last option in dataloader')
+    parser.add_argument('--chkpt', default=False, action='store_true',
+                        help='Save last checkpoint')
 
 
     ## Add parser arguments
@@ -69,23 +69,22 @@ def train():
     chrono = Chronometer()
     
     # configure distribution method: define rank and initialise communication backend (NCCL)
-    dist.init_process_group(backend='nccl', init_method='env://',
-                            world_size=idr_torch.size, rank=idr_torch.rank)
+    #TODO: initialize the parallel environment
     
     # define model & device
-    torch.cuda.set_device(idr_torch.local_rank)
+    #TODO: bind the proper GPU to the current process
     gpu = torch.device("cuda")
-    model = models.resnet50()
+    model = models.resnet152()
     model = model.to(gpu, memory_format=torch.channels_last)
     
-    archi_model = 'Resnet-50'
+    archi_model = 'Resnet-152'
     
     if idr_torch.rank == 0: print(f'model: {archi_model}')                                                   
     if idr_torch.rank == 0: print('number of parameters: {}'.format(sum([p.numel()
                                               for p in model.parameters()])))                                 
     
-    # Switch the model in Distributed Data Parallelism mode 
-    model = DistributedDataParallel(model, device_ids=[idr_torch.local_rank])
+    #TODO: switch the model in Distributed Data Parallel mode 
+    
 
     # distribute batch size (mini-batch)                                                                      
     num_replica = idr_torch.size                                    
@@ -113,10 +112,10 @@ def train():
     #########  DATALOADER ############ 
 
     if idr_torch.rank == 0: print(f"DATALOADER {args.num_workers} {args.persistent_workers} {args.pin_memory} {args.non_blocking} {args.prefetch_factor} {args.drop_last} ") ### DON'T MODIFY ###
-
+    
     ## compatibility for pytorh >= 2.x
     if args.num_workers == 0: args.prefetch_factor = None
-    
+
     # Define a transform to pre-process the training images.
     transform = transforms.Compose([ 
             transforms.RandomResizedCrop(args.image_size),  # Random resize - Data Augmentation
@@ -126,20 +125,16 @@ def train():
                                  std=(0.229, 0.224, 0.225))
             ])
         
-    
-    
+
     train_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet',
                                                   transform=transform)
     
-    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset,
-                                                                num_replicas=idr_torch.size,
-                                                                rank=idr_torch.rank,
-                                                                shuffle=True)
+    #TODO: define distributed sampler for train_loader and call it in the DataLoader
+    
     
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=mini_batch_size,
                                                shuffle=False,
-                                               sampler=train_sampler,
                                                num_workers=args.num_workers,
                                                persistent_workers=args.persistent_workers,
                                                pin_memory=args.pin_memory,
@@ -157,15 +152,12 @@ def train():
     val_dataset = torchvision.datasets.ImageNet(root=os.environ['ALL_CCFRSCRATCH']+'/imagenet', split='val',
                         transform=val_transform)
     
-    val_sampler = torch.utils.data.distributed.DistributedSampler(val_dataset,
-                                                              num_replicas=idr_torch.size,
-                                                              rank=idr_torch.rank,
-                                                              shuffle=False)
+    
+    #TODO: define distributed sampler for val_loader and call it in the DataLoader
     
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset,    
                                              batch_size=VAL_BATCH_SIZE,
                                              shuffle=False,
-                                             sampler=val_sampler,
                                              num_workers=args.num_workers,
                                              persistent_workers=args.persistent_workers,
                                              pin_memory=args.pin_memory,
@@ -183,15 +175,10 @@ def train():
     
     
     chrono.start()                               
-        
-    # TODO: pytorch profiler setup
-
     
     #### TRAINING ############
-    
-    # TODO: put the loop in the prof context
     for epoch in range(args.epochs):
-        train_sampler.set_epoch(epoch)
+        # TODO set epoch for sampler
 
         if args.test: chrono.next_iter()
         if idr_torch.rank == 0: chrono.tac_time(clear=True)
@@ -199,6 +186,7 @@ def train():
 
             csteps = i + 1 + epoch * N_batch
             if args.test and csteps > args.test_nsteps: break
+            if args.test: print(f'Train step {csteps} - rank {idr_torch.rank}')
             if i == 0 and idr_torch.rank == 0:
                 print(f'image batch shape : {images.size()}')
             
@@ -227,24 +215,22 @@ def train():
 
             if args.test: chrono.update()
  
-            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1) and idr_torch.rank == 0:
+            if ((i + 1) % (N_batch//10) == 0 or i == N_batch - 1):
                 train_loss, accuracy = train_metric.compute()
-                print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
-                      epoch + 1, args.epochs, i+1, N_batch,
-                      chrono.tac_time(), loss_acc, accuracy, accuracy_top5))
-                                     
+                if idr_torch.rank == 0:
+                    print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
+                          epoch + 1, args.epochs, i+1, N_batch,
+                          chrono.tac_time(), train_loss, accuracy))
 
             # scheduler update
             scheduler.step()
-            
-            # TODO: profiler update
-            
 
             #### VALIDATION ############   
             if ((i == N_batch - 1) or (args.test and i==args.test_nsteps-1)) :
  
                 chrono.validation()
                 model.eval()
+                if args.test: print(f'Train step 100 - rank {idr_torch.rank}')
 
                 for iv, (val_images, val_labels) in enumerate(val_loader): 
 
@@ -285,18 +271,17 @@ def train():
         chrono.display()
         print(">>> Number of batch per epoch: {}".format(N_batch))
         print(f'Max Memory Allocated {torch.cuda.max_memory_allocated()} Bytes')
-
-
         
     # Save last checkpoint
-    if not args.test and idr_torch.rank == 0:
+    if args.chkpt and idr_torch.rank == 0:
         checkpoint_path = f"checkpoints/{os.environ['SLURM_JOBID']}_{global_batch_size}.pt"
-        torch.save(model.state_dict(), checkpoint_path)
-        print("Last epoch checkpointed to " + checkpoint_path)
-        
+        torch.save(model.module.state_dict(), checkpoint_path)
+        print("checkpoint saves: " + checkpoint_path)
 
 if __name__ == '__main__':
     
+    os.environ["NCCL_DEBUG"] = "INFO"
+    os.environ["NCCL_DEBUG_SUBSYS"] = "INIT,COLL"
     # display info
     if idr_torch.rank == 0:
         print(">>> Training on ", len(idr_torch.hostnames), " nodes and ", idr_torch.size, " processes")

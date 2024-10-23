@@ -17,7 +17,7 @@ import torch
 # #######################
 
 
-def controle_technique(jobid, deepspeed=False):
+def controle_technique(jobid):
     # jobid can either be a list, a tuple, an int, or a string
     if isinstance(jobid, (list, tuple)):
         jobid = jobid[0]
@@ -55,27 +55,23 @@ def controle_technique(jobid, deepspeed=False):
                 gpu = line.split()[-2]
             if "global batch size" in line:
                 bs = line.split()[3]
-            if not deepspeed:
-                if "Optimizer:" in line:
-                    write_optim=True
-                    optim = line.split(':')[-1] + '<br>'
-                elif write_optim:
-                    optim = optim + line + '<br>'
-                    if ')' in line and '(' not in line:
-                        write_optim=False
-                if 'optimizer_name' in line:
-                    optim = line.split('  ')[-1]
-                if 'optimizer_params' in line:
-                    optim = optim + '<br>' + ('<br>').join(line.split('  ')[-1].split('. ')[-1].split(', '))
-                if 'scheduler_name' in line:
-                    optim = optim + '<br>' + line.split('  ')[-1]
-                if 'scheduler_params' in line:
-                    optim = optim + '<br>' + ('<br>').join(line.split('  ')[-1].split('. ')[-1].split(', '))
+            if "Optimizer:" in line:
+                write_optim=True
+                optim = line.split(':')[-1] + '<br>'
+            elif write_optim:
+                optim = optim + line + '<br>'
+                if ')' in line and '(' not in line:
+                    write_optim=False
+            if 'optimizer_name' in line:
+                optim = line.split('  ')[-1]
+            if 'optimizer_params' in line:
+                optim = optim + '<br>' + ('<br>').join(line.split('  ')[-1].split('. ')[-1].split(', '))
+            if 'scheduler_name' in line:
+                optim = optim + '<br>' + line.split('  ')[-1]
+            if 'scheduler_params' in line:
+                optim = optim + '<br>' + ('<br>').join(line.split('  ')[-1].split('. ')[-1].split(', '))
             if 'Peak Power during training' in line:
                 power = line.split()[-2].split('.')[0]
-            
-                
-    if deepspeed: optim = 'Deepspeed Settings!!'
             
                 
     layout = go.Layout(
@@ -254,7 +250,7 @@ def GPU_underthehood(jobids, calcul_memo=True):
                 if "Power during" in line: 
                     power.append(float(line.split(' ')[-2]))
                 if i == 0 and 'model:' in line:
-                    model = line.split(': ')[-1] + "Llama-3.2-3b )" # Dirty fix to compensate the fact that the model name is DDP or FSDP
+                    model = line.split(': ')[-1]
                 if i == 0 and 'number of parameters:' in line:
                     nparam = line.split(': ')[-1]
                 
@@ -350,9 +346,9 @@ def GPU_underthehood(jobids, calcul_memo=True):
     
     for i, bs in enumerate(bsize):
         if mem[i] == 'OOM':
-            print(f'Global Batch size: {bs} CUDA out of memory')
+            print(f'Batch size per GPU: {bs} CUDA out of memory')
         else:
-            print(f'Global Batch size: {bs} Max GPU Memory Allocated: {mem[i]/2**30:.2f} GB, Throughput: {int(bs)/it_time[i]:.3f} images/second')
+            print(f'Batch size per GPU: {bs} Max GPU Memory Allocated: {mem[i]/2**30:.2f} GB, Troughput: {int(bs)/it_time[i]:.3f} images/second')
         
     if calcul_memo: print(f'Memory occupancy by Model part : {np.mean(model_mem):.3f} +/- {np.std(model_mem):.3f} GB')
     
@@ -545,10 +541,15 @@ def turbo_profiler(jobid, dataloader_info=False):
                 non_blocking = line.split(' ')[4]
                 prefetch_factor = line.split(' ')[5]
                 drop_last = line.split(' ')[6]
+            if dataloader_info and "VmHWM" in line:
+                cpu_mem_usage = int(line.split(' ')[-2])/2**20
                 
     print(f"\033[1m>>> Turbo Profiler >>>\033[0m Training complete in {training_time} s")
     pd.DataFrame(perf).plot(kind='bar', figsize=(18, 4))
-    plt.title('>>> Turbo Profiler >>>', fontsize=16)
+    if dataloader_info:
+        plt.title(f'>>> Turbo Profiler >>> CPU Memory Usage: {cpu_mem_usage} GB', fontsize=16)
+    else:
+        plt.title('>>> Turbo Profiler >>>', fontsize=16)
     plt.xlabel('Iterations', fontsize=14)
     plt.ylabel('Time in seconds', fontsize=14)
     plt.ylim(top=8)
@@ -564,14 +565,15 @@ def turbo_profiler(jobid, dataloader_info=False):
                                          "non_blocking":[str(non_blocking)],
                                          "prefetch_factor":[int(prefetch_factor)],
                                          "drop_last":[str(drop_last)],
-                                         "loading_time":[float(load_time)]})
+                                         "loading_time":[float(load_time)],
+                                         "CPU_memory_usage(GB)":[float(cpu_mem_usage)]})
                                          #"training_time":[float(training_time)]})
                                          #"forward_backward_time":[float(it_time)],
                                          #"iteration_time":[float(it_time)+float(load_time)],
         return dataloader_trial
 
 
-def comm_profiler(jobid):
+def comm_profiler(jobid, n_display=None):
     # jobid can either be a list, a tuple, an int, or a string
     if isinstance(jobid, (list, tuple)):
         jobid = jobid[0]
@@ -656,7 +658,11 @@ def comm_profiler(jobid):
     dico['operations'] = df[df.global_rank==0].train_step + ' - ' + df[df.global_rank==0].coll_operation + ' - (' + df[df.global_rank==0].datatype.replace(nccldtype) + ')'
     dfplot = pd.DataFrame(dico)
     dfplot = dfplot.set_index('operations')
-    dfplot.iloc[-110:].plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
+    if n_display:
+        dfplot.iloc[:n_display].plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
+        dfplot.iloc[-n_display:].plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
+    else:
+        dfplot.plot.bar(figsize=(18, 3), rot=90, title=f'Collective Communication Profiler - Nbr of operations: {len(df)}', ylabel='communications Bytes')
     dfplot = dfplot.groupby('operations', sort=False).sum()
     dfplot.plot.bar(figsize=(18, 3), rot=90, title=f'Aggregate Collective Communication Profiler - global count: {df.Count.sum()} Bytes', ylabel='communications Bytes')
     

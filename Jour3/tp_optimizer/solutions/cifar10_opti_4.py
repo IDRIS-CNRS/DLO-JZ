@@ -49,8 +49,6 @@ def main():
                         help='Weight decay')                           
     parser.add_argument('--test', default=False, action='store_true',  
                         help='Test 50 iterations')                     
-    parser.add_argument('--prof', default=False, action='store_true',
-                        help='Enable pytorch profiling')
     parser.add_argument('--chkpt', default=False, action='store_true',
                         help='Save last checkpoint')
     args = parser.parse_args()
@@ -81,7 +79,7 @@ def train(args):
     # Send to GPU
     torch.cuda.set_device(idr_torch.local_rank)
     gpu = torch.device("cuda")
-    model = model.to(gpu)
+    model = model.to(gpu, memory_format=torch.channels_last)
 
     # Distribute batch size (mini-batch)                             
     num_replica = idr_torch.size                                     
@@ -95,9 +93,6 @@ def train(args):
     criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)     
     
     # Define optimizer
-    #optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.mom, weight_decay=args.wd)
-    #optimizer = torch.optim.AdamW(model.parameters(), args.lr, betas=(args.mom, 0.999), weight_decay=args.wd)
-    #optimizer = apex.optimizers.FusedLAMB(model.parameters(), args.lr, betas=(args.mom, 0.999), weight_decay=args.wd)
     optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.mom, weight_decay=args.wd)
     wrapped_optimizer = LARC(optimizer)
     
@@ -133,7 +128,7 @@ def train(args):
                                                batch_size=mini_batch_size,
                                                shuffle=False,
                                                sampler=train_sampler,
-                                               num_workers=4,
+                                               num_workers=8,
                                                persistent_workers=True,
                                                pin_memory=True,
                                                prefetch_factor=2)
@@ -156,7 +151,7 @@ def train(args):
                                              batch_size=VAL_BATCH_SIZE,
                                              shuffle=False,
                                              sampler=val_sampler,
-                                             num_workers=4,
+                                             num_workers=8,
                                              persistent_workers=True,
                                              pin_memory=True,
                                              prefetch_factor=2)
@@ -166,7 +161,6 @@ def train(args):
     N_val_batch = len(val_loader)
     N_val = len(val_dataset)
     
-    #scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1, total_iters=5)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, steps_per_epoch=N_batch, epochs=args.epochs)
     
     chrono.start()                                  
@@ -180,113 +174,98 @@ def train(args):
     # Torchmetrics
     train_metric_acc = Accuracy(task="multiclass", num_classes=10).to(gpu)
     valid_metric_acc = Accuracy(task="multiclass", num_classes=10).to(gpu)
-
-    # Pytorch profiler setup
-    prof =  profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-                    schedule=schedule(wait=1, warmup=1, active=12),
-                    on_trace_ready=tensorboard_trace_handler('./profiler/' + os.environ['SLURM_JOBID']),
-                    profile_memory=True,
-                    record_shapes=True, 
-                    with_stack=False,
-                    with_flops=True
-                    ) if args.prof else contextlib.nullcontext()
-    
     
     ######## TRAINING #######
-    with prof:
-        for epoch in range(args.epochs):    
+    for epoch in range(args.epochs):    
+        
+        train_sampler.set_epoch(epoch)
+        chrono.dataload()                                   
+                                                             
+        for i, (images, labels) in enumerate(train_loader):
+            model.train()                                                
+            csteps = i + 1 + epoch * N_batch                
+            if args.test and csteps > 50: break              
+
+            # distribution of images and labels to all GPUs
+            images = images.to(gpu, non_blocking=True, memory_format=torch.channels_last)
+            labels = labels.to(gpu, non_blocking=True)
+
+            chrono.dataload()
+            chrono.training()
+            chrono.forward()
+
+            wrapped_optimizer.zero_grad()
+            # Runs the forward pass with autocasting.
+            with autocast():
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
+            chrono.forward()
+            chrono.backward()     
+
+            scaler.scale(loss).backward()
+            scaler.step(wrapped_optimizer)
+            scaler.update()
+
+            # Torchmetrics
+            _, predicted = torch.max(outputs.data, 1)
+            train_metric_acc(labels,predicted)     #update metric
+            train_acc = train_metric_acc.compute() #sync all rank
+            train_metric_acc.reset()               #reset
             
-            train_sampler.set_epoch(epoch)
-            chrono.dataload()                                   
-                                                                 
-            for i, (images, labels) in enumerate(train_loader):
-                model.train()                                                
-                csteps = i + 1 + epoch * N_batch                
-                if args.test and csteps > 50: break              
+            chrono.backward()
+            chrono.training()
 
-                # distribution of images and labels to all GPUs
-                images = images.to(gpu, non_blocking=True)
-                labels = labels.to(gpu, non_blocking=True)
+            if idr_torch.rank == 0:
+                print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Acc:{:.4f}'.format(
+                      epoch + 1, args.epochs, i+1, N_batch, loss.item(),train_acc))                             
+                accuracies = []                             
 
-                chrono.dataload()
-                chrono.training()
-                chrono.forward()
+            # scheduler update
+            scheduler.step()
 
-                wrapped_optimizer.zero_grad()
-                # Runs the forward pass with autocasting.
-                with autocast():
-                    outputs = model(images)
-                    loss = criterion(outputs, labels)
-
-                chrono.forward()
-                chrono.backward()     
-
-                scaler.scale(loss).backward()
-                scaler.step(wrapped_optimizer)
-                scaler.update()
-
-                # Torchmetrics
-                _, predicted = torch.max(outputs.data, 1)
-                train_metric_acc(labels,predicted)     #update metric
-                train_acc = train_metric_acc.compute() #sync all rank
-                train_metric_acc.reset()               #reset
+            chrono.dataload()                               
+                                                            
+            #### VALIDATION ############                    
+            if (((i+1)%(N_batch//2)==0) or (args.test and i==49)):                                    
+                model.eval()                                
+                chrono.validation()
                 
-                chrono.backward()
-                chrono.training()
-
-                if idr_torch.rank == 0:
-                    print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Acc:{:.4f}'.format(
-                          epoch + 1, args.epochs, i+1, N_batch, loss.item(),train_acc))                             
-                    accuracies = []                             
-
-                # scheduler update
-                scheduler.step()
-                
-                # profiler update
-                if args.prof: prof.step()
-
-                chrono.dataload()                               
-                                                                
-                #### VALIDATION ############                    
-                if (((i+1)%(N_batch//2)==0) or (args.test and i==49)):                                    
-                    model.eval()                                
-                    chrono.validation()
+                for iv, (val_images, val_labels) in enumerate(val_loader): 
                     
-                    for iv, (val_images, val_labels) in enumerate(val_loader): 
-                        
-                        if args.test and iv >= 20: break 
-                                                               
-                        # distribution of images and labels to all GPUs
-                        val_images = val_images.to(gpu, non_blocking=True)
-                        val_labels = val_labels.to(gpu, non_blocking=True)
+                    if args.test and iv >= 20: break 
+                                                           
+                    # distribution of images and labels to all GPUs
+                    val_images = val_images.to(gpu, non_blocking=True, memory_format=torch.channels_last)
+                    val_labels = val_labels.to(gpu, non_blocking=True)
 
-                        # Runs the forward pass with no grade mode.
-                        with torch.no_grad():
-                            with autocast():
-                                val_outputs = model(val_images)
-                                loss = criterion(val_outputs, val_labels)
+                    # Runs the forward pass with no grade mode.
+                    with torch.no_grad():
+                        with autocast():
+                            val_outputs = model(val_images)
+                            loss = criterion(val_outputs, val_labels)
 
-                        val_loss += loss       
+                    val_loss += loss       
 
-                        # Torchmetrics
-                        _, val_predicted = torch.max(val_outputs.data, 1)
-                        valid_metric_acc(val_labels,val_predicted)#update metric
-                        
-                    val_acc = valid_metric_acc.compute() #sync all rank at evaluation end !
-                    valid_metric_acc.reset()             #reset
-                    val_loss /= iv                       #loss mean on iv
+                    # Torchmetrics
+                    _, val_predicted = torch.max(val_outputs.data, 1)
+                    valid_metric_acc(val_labels,val_predicted)#update metric
+                    
+                val_acc = valid_metric_acc.compute() #sync all rank at evaluation end !
+                valid_metric_acc.reset()             #reset
+                val_loss /= iv                       #loss mean on iv
 
-                    chrono.validation()                                
-                                                                       
-                    if not args.test and idr_torch.rank == 0:          
-                        print('##EVALUATION STEP##')                   
-                        print('Epoch [{}/{}], Validation Loss: {:.4f}, Validation Accuracy: {:.4f}'.format(epoch + 1, args.epochs,
-                        val_loss.item(), val_acc))
-                        print('Learning Rate: {:.4f}'.format(scheduler.get_last_lr()[0]))
-                        print(">>> Validation complete in: " + str(chrono.val_time))    
+                chrono.validation()                                
+                                                                   
+                if not args.test and idr_torch.rank == 0:          
+                    print('##EVALUATION STEP##')                   
+                    print('Epoch [{}/{}], Validation Loss: {:.4f}, Validation Accuracy: {:.4f}'.format(epoch + 1, args.epochs,
+                    val_loss.item(), val_acc))
+                    print('Learning Rate: {:.4f}'.format(scheduler.get_last_lr()[0]))
+                    print(">>> Validation complete in: " + str(chrono.val_time))    
 
-                    ## Clear val_loss
-                    val_loss -= val_loss
+                ## Clear val_loss
+                val_loss -= val_loss
                      
         # Torchmetrics epoch reset
         train_metric_acc.reset()

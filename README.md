@@ -21,30 +21,33 @@ Cette formation est dédiée au passage à l'échelle multi-GPU de l'entraîneme
 * L'accélération GPU
 * La précision mixte
 * L'optimisation des formats de tenseur (channels last memory format)
+* Profilage de code
 
 ### Jour 2
 
-* Entraînement distribué : notions générales et parallélisme de données
-* Profilage de code
 * Optimisation du prétraitement des données sur CPU (DataLoader)
+* Entraînement distribué : notions générales et parallélisme de données
+* Le stockage et le format des données d'entrée (webdataset)
 
 ### Jour 3
 
-* Le stockage et le format des données d'entrée (webdataset)
-* Les outils de visualisation et suivi d'expériences
+* JIT (torch.compile)
 * Entraînement large batches (learning rate scheduler, optimiseurs large batches,…)
 * Les techniques d'optimisation de recherche des hyperparamètres
 
 ### Jour 4
 
-* JIT (torch.compile)
-* Les bonnes pratiques
+* Gros modèles
+* FSDP
 * Les parallélismes de modèle
 * Les API pour les parallélismes de modèle
+* Les outils de visualisation et suivi d'expériences
+* Les bonnes pratiques
+
 
 TP au choix :
 * Un exemple de gros modèle : le Vision Transformer
-* DDP et TP_DDP à la main
+* Tensor Parallelism à la main
 * L'augmentation de données (Data Augmentation)
 * JIT et compilation
 
@@ -52,6 +55,8 @@ TP au choix :
 * [TP1_0](https://www.deepmama.com/quizz/dlojz_quizz1.html)
 * [TP1_1](https://www.deepmama.com/quizz/dlojz_quizz2.html)
 * [TP1_2](https://www.deepmama.com/quizz/dlojz_quizz3.html)
+* [TP2_1](https://www.deepmama.com/quizz/dlojz_quizz4.html)
+* [TP2_2](https://www.deepmama.com/quizz/dlojz_quizz5.html)
   
 
 ## Durée :
@@ -66,13 +71,11 @@ Les parties pratiques se dérouleront sur le supercalculateur Jean Zay de l'IDRI
 - Nathan Cassereau
 - Kamel Guerda
 - Léo Hunout
-- Myriam Peyrounette
 
 ## S’inscrire à cette formation :
 https://cours.idris.fr
 
 ### Améliorations :
-* [x] pytorch 2.0
 * [ ] FFCV
 * [ ] DALI
 * [ ] torchdata

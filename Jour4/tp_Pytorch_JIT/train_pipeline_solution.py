@@ -45,7 +45,7 @@ def train():
                         help='Test 50 iterations')                                                            
     parser.add_argument('--test-nsteps', default='50', type=int,                                              
                         help='the number of steps in test mode')                                              
-    parser.add_argument('--num-workers', default=16, type=int,                                                
+    parser.add_argument('--num-workers', default=8, type=int,                                                
                         help='num workers in dataloader')                                                     
     parser.add_argument('--persistent-workers', default=True, action=argparse.BooleanOptionalAction,          
                         help='activate persistent workers in dataloader')                                     
@@ -53,7 +53,7 @@ def train():
                         help='activate pin memory option in dataloader')                                      
     parser.add_argument('--non-blocking', default=True, action=argparse.BooleanOptionalAction,                
                         help='activate asynchronuous GPU transfer')                                           
-    parser.add_argument('--prefetch-factor', default=3, type=int,                                             
+    parser.add_argument('--prefetch-factor', default=2, type=int,                                             
                         help='prefectch factor in dataloader')                                                
     parser.add_argument('--drop-last', default=False, action=argparse.BooleanOptionalAction,                  
                         help='activate drop_last option in dataloader')                                       
@@ -68,11 +68,11 @@ def train():
     
     # define model & device
     gpu = torch.device("cuda")
-    model_raw = models.resnet50()
+    model_raw = models.resnet152()
     model_raw = model_raw.to(gpu, memory_format=torch.channels_last)
     model = torch.compile(model_raw, backend="inductor")
     
-    archi_model = 'Resnet-50'
+    archi_model = 'Resnet-152'
     
     if idr_torch.rank == 0: print(f'model: {archi_model}')                                                   
     if idr_torch.rank == 0: print('number of parameters: {}'.format(sum([p.numel()

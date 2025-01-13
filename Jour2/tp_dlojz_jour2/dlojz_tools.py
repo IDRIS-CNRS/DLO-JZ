@@ -543,6 +543,8 @@ def turbo_profiler(jobid, dataloader_info=False):
                 drop_last = line.split(' ')[6]
             if dataloader_info and "VmHWM" in line:
                 cpu_mem_usage = int(line.split(' ')[-2])/2**20
+            if dataloader_info and ">>> First step loading" in line:
+                first_step_load_time = line.split(' ')[-1]
                 
     print(f"\033[1m>>> Turbo Profiler >>>\033[0m Training complete in {training_time} s")
     pd.DataFrame(perf).plot(kind='bar', figsize=(18, 4))
@@ -566,6 +568,7 @@ def turbo_profiler(jobid, dataloader_info=False):
                                          "prefetch_factor":[int(prefetch_factor)],
                                          "drop_last":[str(drop_last)],
                                          "loading_time":[float(load_time)],
+                                         "1st_step_loading_time":[float(first_step_load_time)],
                                          "CPU_memory_usage(GB)":[float(cpu_mem_usage)]})
                                          #"training_time":[float(training_time)]})
                                          #"forward_backward_time":[float(it_time)],

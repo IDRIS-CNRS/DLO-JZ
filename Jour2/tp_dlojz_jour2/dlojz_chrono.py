@@ -160,7 +160,8 @@ class Chronometer:
         if len(self.time_perf_backward) > 0: print(">>> Backward performance time: {} seconds (+/- {})".format(np.mean(self.time_perf_backward[1:]), np.std(self.time_perf_backward[1:])))
         if len(self.power) > 0: print(">>> Peak Power during training: {} W)".format(np.max(self.power)))
         if self.val_time: print(">>> Validation time: {}".format(self.val_time))
-        if len(self.time_perf_train) > 0 and len(self.time_perf_load) > 0: 
+        if len(self.time_perf_train) > 0 and len(self.time_perf_load) > 0:
+            print(f">>> First step loading time: {self.time_perf_load[0]}")
             print(">>> Sortie trace #####################################" )
             print(">>>JSON", json.dumps({'GPU process - Forward/Backward':self.time_perf_train, 'CPU process - Dataloader':self.time_perf_load}))
                 

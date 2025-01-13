@@ -288,5 +288,5 @@ def train(args):
 
 if __name__ == '__main__':
     if idr_torch.rank == 0:
-        print(">>> Training on ", len(idr_torch.hostnames), " nodes and ", idr_torch.size, " processes")
+        print(">>> Training on ", len(idr_torch.nodelist), " nodes and ", idr_torch.size, " processes")
     main()

@@ -57,7 +57,9 @@ TP au choix :
 * [TP1_2](https://www.deepmama.com/quizz/dlojz_quizz3.html)
 * [TP2_1](https://www.deepmama.com/quizz/dlojz_quizz4.html)
 * [TP2_2](https://www.deepmama.com/quizz/dlojz_quizz5.html)
-  
+
+### Videos DP et ZeRODP
+* [Animations parallélisme](https://www.youtube.com/playlist?list=PLQd0PPHfzSeJ-gBR8RNfmEEE2ZMBhRb1B)
 
 ## Durée :
 4 jours.

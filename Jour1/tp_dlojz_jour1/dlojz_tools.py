@@ -1,6 +1,8 @@
 from IPython.display import display, Markdown
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.io as pio
+pio.renderers.default = 'notebook_connected'
 from PIL import Image
 import difflib
 import pandas as pd

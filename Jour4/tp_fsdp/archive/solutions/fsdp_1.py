@@ -76,8 +76,7 @@ dist.init_process_group(
 )
 
 DSDIR = Path(os.environ["DSDIR"])
-NEW_DSDIR = Path("/gpfsdsdir") / "dataset"
-model_path = NEW_DSDIR / "HuggingFace_Models" / "meta-llama" / "Llama-3.2-3B-Instruct"
+model_path = DSDIR / "HuggingFace_Models" / "meta-llama" / "Llama-3.2-3B-Instruct"
 dataset_path = DSDIR / "HuggingFace" / "hieunguyenminh" / "roleplay"
 
 torch.cuda.set_device(idr_torch.local_rank)
@@ -96,16 +95,12 @@ model = FSDP(
     sharding_strategy=ShardingStrategy.FULL_SHARD,
     use_orig_params=True,
     device_id=idr_torch.local_rank,
-    auto_wrap_policy=functools.partial(
-        transformer_auto_wrap_policy,
-        transformer_layer_cls={LlamaDecoderLayer},
-    ),
 )
 ####
 
 #### JIT
 if args.compile:
-    model = torch.compile(model)
+    pass
 ####
 
 if idr_torch.rank == 0:
@@ -230,11 +225,7 @@ for i, (input_ids, attention_mask, labels) in enumerate(dataloader, start=1):
     chrono.dataload()
 ####
 
-
-# We don't do any validation, but I need to trick Bertrand's chronometer for logs not to be fudged.
-chrono.validation()
-chrono.validation()
-chrono.display(1)
+chrono.display()
 dist.barrier()
 if idr_torch.rank == 0:
     print(f">>> Number of batch per epoch: {len(dataloader)}")

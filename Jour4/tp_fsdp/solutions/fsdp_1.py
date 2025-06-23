@@ -7,9 +7,7 @@ import torch
 import torch.distributed as dist
 from argparse import ArgumentParser, Namespace, BooleanOptionalAction
 from pathlib import Path
-from torch.distributed.fsdp.fully_sharded_data_parallel import FullyShardedDataParallel as FSDP
-from torch.distributed.fsdp.api import ShardingStrategy
-from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
+from torch.distributed.fsdp import fully_shard, FSDPModule
 from torch.nn import CrossEntropyLoss
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim import AdamW
@@ -76,8 +74,7 @@ dist.init_process_group(
 )
 
 DSDIR = Path(os.environ["DSDIR"])
-NEW_DSDIR = Path("/gpfsdsdir") / "dataset"
-model_path = NEW_DSDIR / "HuggingFace_Models" / "meta-llama" / "Llama-3.2-3B-Instruct"
+model_path = DSDIR / "HuggingFace_Models" / "meta-llama" / "Llama-3.2-3B-Instruct"
 dataset_path = DSDIR / "HuggingFace" / "hieunguyenminh" / "roleplay"
 
 torch.cuda.set_device(idr_torch.local_rank)
@@ -91,12 +88,9 @@ tokenizer.pad_token_id = tokenizer.eos_token_id
 ####
 
 #### Distribute the Model
-model = FSDP(
-    module=model,
-    sharding_strategy=ShardingStrategy.FULL_SHARD,
-    use_orig_params=True,
-    device_id=idr_torch.local_rank,
-)
+for layer in model.model.layers:
+    fully_shard(layer)
+fully_shard(model)
 ####
 
 #### JIT
@@ -226,11 +220,7 @@ for i, (input_ids, attention_mask, labels) in enumerate(dataloader, start=1):
     chrono.dataload()
 ####
 
-
-# We don't do any validation, but I need to trick Bertrand's chronometer for logs not to be fudged.
-chrono.validation()
-chrono.validation()
-chrono.display(1)
+chrono.display()
 dist.barrier()
 if idr_torch.rank == 0:
     print(f">>> Number of batch per epoch: {len(dataloader)}")

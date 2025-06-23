@@ -7,7 +7,9 @@ import torch
 import torch.distributed as dist
 from argparse import ArgumentParser, Namespace, BooleanOptionalAction
 from pathlib import Path
-from torch.distributed.fsdp import fully_shard, FSDPModule
+from torch.distributed.fsdp.fully_sharded_data_parallel import FullyShardedDataParallel as FSDP
+from torch.distributed.fsdp.api import ShardingStrategy
+from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
 from torch.nn import CrossEntropyLoss
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim import AdamW
@@ -88,14 +90,12 @@ tokenizer.pad_token_id = tokenizer.eos_token_id
 ####
 
 #### Distribute the Model
-for layer in model.model.layers:
-    fully_shard(layer)
-fully_shard(model)
+model = DistributedDataParallel(model)
 ####
 
 #### JIT
 if args.compile:
-    model = torch.compile(model)
+    pass
 ####
 
 if idr_torch.rank == 0:

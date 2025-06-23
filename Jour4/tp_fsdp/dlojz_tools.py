@@ -1,6 +1,8 @@
 from IPython.display import display, Markdown
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.io as pio
+pio.renderers.default = 'notebook_connected'
 from PIL import Image
 import difflib
 import pandas as pd
@@ -49,8 +51,6 @@ def controle_technique(jobid):
                 back_time = float(line.split(' ')[-4])
             if "batch per epoch" in line: 
                 n_batch = float(line.split(' ')[-1])
-            if ">>> Validation time:" in line: 
-                val_time = float(line.split(':')[-1])
             if ">>> Training on " in line:
                 gpu = line.split()[-2]
             if "global batch size" in line:
@@ -102,7 +102,7 @@ def controle_technique(jobid):
     domain = {'x': [0, 0.5], 'y': [0, 1]},
     value = throughput_tot,
     mode = "gauge+number",
-    title = {'text': "Images/second"},
+    title = {'text': "Sequences/second"},
     gauge = {'axis': {'range': [None, 10000]},
              'steps' : [
                  {'range': [0, 1200], 'color': "lightgray"},
@@ -180,16 +180,12 @@ def controle_technique(jobid):
     
     if throughput:
         fig.show()
-        print(f'Train throughput: {throughput_tot:.2f} images/second')
-        print(f'GPU throughput: {throughput:.2f} images/second')
+        print(f'Train throughput: {throughput_tot:.2f} Sequences/second')
+        print(f'GPU throughput: {throughput:.2f} Sequences/second')
         print(f'epoch time: {(it_time+load_time)*n_batch:.2f} seconds')
-        #print(f'training time estimation for 90 epochs (with validations): {((it_time+load_time)*n_batch+val_time)*n_epoch/3600:.2f} hours')
         print('-----------')
         print(f'training step time average (fwd/bkwd on GPU): {it_time:.6f} sec ({for_time/it_time*100:.1f}%/{back_time/it_time*100:.1f}%) +/- {it_time_std:.6f}')
         print(f'loading step time average (IO + CPU to GPU transfer): {load_time:.6f} sec +/- {load_time_std:.6f}')
-        #print('-----------')
-        #el_epochs = round(1800 / ((it_time+load_time)*n_batch/(32/int(gpu)) + 20))
-        #print(f'ELIGIBLE to run {el_epochs} epochs - {int(el_epochs * n_batch * int(gpu) // 32)} update steps')
         display(Markdown(f'[Click here to display the log file]({log_out})'))
             
     else:
@@ -231,7 +227,6 @@ def GPU_underthehood(jobids, calcul_memo=True):
     bsize = []
     it_time = []
     load_time = []
-    power = []
     model = ''
     nparam = ''
     for i,out in enumerate(np.array([search_log(contains=j) for j in jobids]).reshape(-1)):
@@ -247,8 +242,6 @@ def GPU_underthehood(jobids, calcul_memo=True):
                     it_time.append(float(line.split(' ')[-4]))
                 if "Loading performance" in line: 
                     load_time.append(float(line.split(' ')[-4]))
-                if "Power during" in line: 
-                    power.append(float(line.split(' ')[-2]))
                 if i == 0 and 'model:' in line:
                     model = line.split(': ')[-1]
                 if i == 0 and 'number of parameters:' in line:
@@ -283,23 +276,19 @@ def GPU_underthehood(jobids, calcul_memo=True):
     
     if calcul_memo: modelpart=Image.open('images/GPUmemModelpart.png')
     
-    fig = make_subplots(rows=1, cols=2, subplot_titles=("Max GPU Memory Allocated", "Throughput / Power"),
-                        specs=[[{"secondary_y": False}, {"secondary_y": True}]])
+    fig = make_subplots(rows=1, cols=2, subplot_titles=("Max GPU Memory Allocated", "Throughput"))
     if calcul_memo: fig.add_trace(go.Bar(x = bsize,y = mem2nan/2**30, name = 'GPU Memory'), 1, 1)
     else: fig.add_trace(go.Bar(x = np.arange(len(bsize))+1,y = mem2nan/2**30, name = 'GPU Memory'), 1, 1)
     fig.add_hline(36, col=1, opacity=0.)
     fig.add_hline(32,line_dash="dot", line_color='red', col=1)
     fig.add_hline(16,line_dash="dot", line_color='orange', col=1, opacity=0.5)
     if calcul_memo:
-        fig.add_trace(go.Scatter(x = bsize,y = thrpts, name = 'GPU Throughput', line_color='green'), 1, 2, secondary_y=False)
-        fig.add_trace(go.Scatter(x = bsize,y = thrpts_tot, name = 'Global Throughput', line_color='green', line = dict(width=1, dash='dash')), 1, 2, secondary_y=False)
-        fig.add_trace(go.Scatter(x = bsize,y = power, name = 'GPU Power consumption', line_color='cyan',
-                                 line = dict(width=1, dash='dash'), marker_symbol='diamond'), 1, 2, secondary_y=True)
+        fig.add_trace(go.Scatter(x = bsize,y = thrpts, name = 'GPU Throughput', line_color='green'), 1, 2)
+        fig.add_trace(go.Scatter(x = bsize,y = thrpts_tot, name = 'Global Throughput', line_color='green', line = dict(width=1, dash='dash')), 1, 2)
     else:
-        fig.add_trace(go.Scatter(x = np.arange(len(bsize))+1,y = thrpts, name = 'GPU Throughput', line_color='green'), 1, 2, secondary_y=False)
-        fig.add_trace(go.Scatter(x = np.arange(len(bsize))+1,y = thrpts_tot, name = 'Global Throughput', line_color='green', line = dict(width=1, dash='dash')), 1, 2, secondary_y=False)
-        fig.add_trace(go.Scatter(x = np.arange(len(bsize))+1,y = power, name = 'GPU Power consumption', line_color='cyan',
-                                 line = dict(width=1, dash='dash'), marker_symbol='diamond'), 1, 2, secondary_y=True)
+        fig.add_trace(go.Scatter(x = np.arange(len(bsize))+1,y = thrpts, name = 'GPU Throughput', line_color='green'), 1, 2)
+        fig.add_trace(go.Scatter(x = np.arange(len(bsize))+1,y = thrpts_tot, name = 'Global Throughput', line_color='green', line = dict(width=1, dash='dash')), 1, 2)
+
     
     fig.update_layout(
     showlegend=True,
@@ -310,8 +299,7 @@ def GPU_underthehood(jobids, calcul_memo=True):
     font={'size':14})
     
     fig.update_yaxes(title_text='GBytes', col=1)
-    fig.update_yaxes(title_text='Images/s', col=2, secondary_y=False)
-    fig.update_yaxes(title_text='GPU Power consumption (Watt) ', col=2, secondary_y=True)
+    fig.update_yaxes(title_text='Sequences/s', col=2)
     if calcul_memo: fig.update_xaxes(title_text='Batch size')
     
     if calcul_memo: fig.add_layout_image(
@@ -348,7 +336,7 @@ def GPU_underthehood(jobids, calcul_memo=True):
         if mem[i] == 'OOM':
             print(f'Batch size per GPU: {bs} CUDA out of memory')
         else:
-            print(f'Batch size per GPU: {bs} Max GPU Memory Allocated: {mem[i]/2**30:.2f} GB, Troughput: {int(bs)/it_time[i]:.3f} images/second')
+            print(f'Batch size per GPU: {bs} Max GPU Memory Allocated: {mem[i]/2**30:.2f} GB, Troughput: {int(bs)/it_time[i]:.3f} Sequences/second')
         
     if calcul_memo: print(f'Memory occupancy by Model part : {np.mean(model_mem):.3f} +/- {np.std(model_mem):.3f} GB')
     
@@ -623,7 +611,7 @@ def comm_profiler(jobid, n_display=None):
                 
             elif "Init COMPLETE" in line:
                 trace = line.split()
-                comm_rank[trace[5]] = int(trace[7])
+                comm_rank[trace[-16]] = int(trace[-14])
                 
             elif "Train step" in line:
                 step = int(line.split()[2])

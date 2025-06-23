@@ -70,7 +70,7 @@ Les parties pratiques se dérouleront sur le supercalculateur Jean Zay de l'IDRI
 ## Intervenants :
 
 - Bertrand Cabot
-- Nathan Cassereau
+- Martin Comminges
 - Kamel Guerda
 - Léo Hunout
 
@@ -78,7 +78,5 @@ Les parties pratiques se dérouleront sur le supercalculateur Jean Zay de l'IDRI
 https://cours.idris.fr
 
 ### Améliorations :
-* [ ] FFCV
 * [ ] DALI
-* [ ] torchdata
-* [ ] Transformer, Accelerate, TransformerEngine, PEFT
+* [ ] Nanotron

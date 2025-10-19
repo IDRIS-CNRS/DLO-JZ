@@ -27,29 +27,24 @@ Cette formation est dédiée au passage à l'échelle multi-GPU de l'entraîneme
 
 * Optimisation du prétraitement des données sur CPU (DataLoader)
 * Entraînement distribué : notions générales et parallélisme de données
-* Le stockage et le format des données d'entrée (webdataset)
+
 
 ### Jour 3
 
-* JIT (torch.compile)
+* Le stockage et le format des données d'entrée (webdataset)
 * Entraînement large batches (learning rate scheduler, optimiseurs large batches,…)
-* Les techniques d'optimisation de recherche des hyperparamètres
+* JIT (torch.compile)
+
 
 ### Jour 4
 
+* Les bonnes pratiques
 * Gros modèles
 * FSDP
 * Les parallélismes de modèle
 * Les API pour les parallélismes de modèle
 * Les outils de visualisation et suivi d'expériences
-* Les bonnes pratiques
-
-
-TP au choix :
-* Un exemple de gros modèle : le Vision Transformer
-* Tensor Parallelism à la main
-* L'augmentation de données (Data Augmentation)
-* JIT et compilation
+* Les techniques d'optimisation de recherche des hyperparamètres
 
 ### Quizz
 * [TP1_0](https://www.deepmama.com/quizz/dlojz_quizz1.html)

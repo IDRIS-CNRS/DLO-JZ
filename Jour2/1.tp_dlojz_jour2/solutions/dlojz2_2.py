@@ -243,12 +243,20 @@ def train():
             if args.test: chrono.update()
  
             if ((i + 1) % args.metric_step == 0 or i == N_batch - 1):
+
+                tp, fp, tn, fn = train_metric['acc']._final_state()
+                print(f"Step {csteps} - Before metric compute GPU{idr_torch.rank}: loss: {train_metric['loss'].mean_value / train_metric['loss'].weight}, accuracy: {(tp/(tp+fp)).item()}")
+
                 train_loss, accuracy = train_metric['loss'].compute(), train_metric['acc'].compute()
                 train_metric['loss'].reset(), train_metric['acc'].reset()
+                
+                print(f"Step {csteps} - After metric compute GPU{idr_torch.rank}: loss: {train_loss}, accuracy: {accuracy}")
+
                 if idr_torch.rank == 0:
                     print('Epoch [{}/{}], Step [{}/{}], Time: {:.3f}, Loss: {:.4f}, Acc:{:.4f}'.format(
                           epoch + 1, args.epochs, i+1, N_batch,
                           chrono.tac_time(), train_loss, accuracy))
+
 
             # scheduler update
             scheduler.step()
